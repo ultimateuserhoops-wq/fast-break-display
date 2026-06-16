@@ -56,7 +56,7 @@ function KatigoStyle({ s }: { s: GameState }) {
   const showHome = useThreePulse("home", s.three_pulse_home);
   const showAway = useThreePulse("away", s.three_pulse_away);
   return (
-    <div className="relative flex h-screen items-center justify-center p-10">
+    <div className="relative flex h-full w-full items-center justify-center p-10">
       <div className="relative w-full max-w-6xl rounded-3xl border border-white/10 bg-gradient-to-b from-zinc-900 to-black p-10 shadow-2xl">
         <p className="text-center text-xl font-black uppercase tracking-[0.3em]">{s.tournament_name}</p>
         <div className="mt-6 grid grid-cols-[1fr_auto_1fr] items-center gap-8">
@@ -97,7 +97,7 @@ function ArenaBoardStyle({ s }: { s: GameState }) {
   const showHome = useThreePulse("home", s.three_pulse_home);
   const showAway = useThreePulse("away", s.three_pulse_away);
   return (
-    <div className="relative flex h-screen items-center justify-center bg-[radial-gradient(circle_at_center,rgba(60,60,60,0.4),#000_70%)] p-8">
+    <div className="relative flex h-full w-full items-center justify-center bg-[radial-gradient(circle_at_center,rgba(60,60,60,0.4),#000_70%)] p-8">
       <div className="relative w-full max-w-[1500px] rounded-[36px] border-[10px] border-zinc-800 bg-black p-3 shadow-[0_30px_120px_rgba(0,0,0,0.9)]">
         <div className="rounded-[24px] border-2 border-zinc-700 bg-gradient-to-b from-zinc-950 via-black to-zinc-950 p-10">
           <p className="text-center text-[10px] font-black uppercase tracking-[0.5em] text-amber-300/80">{s.tournament_name}</p>
@@ -148,7 +148,7 @@ function ArenaLedStyle({ s }: { s: GameState }) {
   const showHome = useThreePulse("home", s.three_pulse_home);
   const showAway = useThreePulse("away", s.three_pulse_away);
   return (
-    <div className="relative flex h-screen items-center justify-center bg-black p-6">
+    <div className="relative flex h-full w-full items-center justify-center bg-black p-6">
       <div className="relative w-full max-w-[1700px] overflow-hidden rounded-md border-y-4 border-zinc-700 bg-[#050505] shadow-2xl"
            style={{ backgroundImage: "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.06) 1px, transparent 0)", backgroundSize: "4px 4px" }}>
         <div className="grid grid-cols-[1fr_auto_1fr] items-stretch">

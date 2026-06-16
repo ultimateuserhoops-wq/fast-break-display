@@ -53,7 +53,7 @@ function Espn1Style({ s }: { s: GameState }) {
   const fH = useThreeFlash(s.three_pulse_home);
   const fA = useThreeFlash(s.three_pulse_away);
   return (
-    <div className="flex h-screen items-end justify-center pb-16">
+    <div className="flex h-full w-full items-end justify-center pb-16">
       <div className="flex h-16 items-stretch overflow-hidden rounded-md shadow-2xl">
         <Side color={s.home_color} abbrText={abbr(s, "home")} score={s.home_score} flash={fH} />
         <div className="flex flex-col items-center justify-center bg-black px-6">
@@ -89,7 +89,7 @@ function Espn2Style({ s }: { s: GameState }) {
   const fH = useThreeFlash(s.three_pulse_home);
   const fA = useThreeFlash(s.three_pulse_away);
   return (
-    <div className="flex h-screen items-end justify-center pb-10">
+    <div className="flex h-full w-full items-end justify-center pb-10">
       <div className="overflow-hidden rounded-xl bg-gradient-to-b from-zinc-900 to-black text-white shadow-2xl ring-1 ring-white/10">
         <div className="flex items-stretch">
           <div className="flex items-center gap-3 px-4 py-3" style={{ background: s.home_color }}>
@@ -134,7 +134,7 @@ function NbaStyle({ s }: { s: GameState }) {
   const fH = useThreeFlash(s.three_pulse_home);
   const fA = useThreeFlash(s.three_pulse_away);
   return (
-    <div className="flex h-screen items-start justify-center pt-6">
+    <div className="flex h-full w-full items-start justify-center pt-6">
       <div className="overflow-hidden rounded-md bg-[#0b1220] text-white shadow-2xl ring-1 ring-white/10">
         <div className="flex items-stretch text-sm">
           <div className="flex items-center gap-2 px-3 py-2" style={{ background: s.home_color }}>
