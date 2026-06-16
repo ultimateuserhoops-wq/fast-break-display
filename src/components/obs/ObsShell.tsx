@@ -22,10 +22,15 @@ export function ObsShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <div ref={wrapRef} className="grid h-screen w-screen place-items-center overflow-hidden" style={{ background: "#000", color: "#fff" }}>
+    <div ref={wrapRef} className="relative h-screen w-screen overflow-hidden" style={{ background: "#000", color: "#fff" }}>
       <div
-        className="relative"
-        style={{ width: 1920, height: 1080, transform: `scale(${scale})`, transformOrigin: "center center" }}
+        className="absolute left-1/2 top-1/2"
+        style={{
+          width: 1920,
+          height: 1080,
+          transform: `translate(-50%, -50%) scale(${scale})`,
+          transformOrigin: "center center",
+        }}
       >
         {children}
       </div>
