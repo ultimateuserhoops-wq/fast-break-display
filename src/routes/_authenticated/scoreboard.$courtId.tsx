@@ -3,13 +3,19 @@ import { useEffect, useMemo, useState } from "react";
 import { TopNav } from "@/components/Nav";
 import { CourtSelector } from "@/components/CourtSelector";
 import { ScoreBox } from "@/components/ScoreBox";
+import { RosterPanel } from "@/components/RosterPanel";
+import { PlayByPlayPad } from "@/components/PlayByPlayPad";
+import { BoxScoreTable } from "@/components/BoxScoreTable";
 import {
-  useGameState, computeGameClockSeconds, computeShotClockTenths,
+  useGameState, useGameEvents,
+  computeGameClockSeconds, computeShotClockTenths,
   formatClock, formatShotClock,
   addScore, resetScore, addFoul, addTimeout,
   startGameClock, pauseGameClock, adjustGameClock,
   startShotClock, pauseShotClock, resetShotClock, adjustShotClock,
-  setQuarter, resetClocksForQuarter, buzzer, patchGameState, logEvent,
+  setQuarter, resetClocksForQuarter, buzzer, patchGameState,
+  scoreFromAction, logPlayerStat,
+  type Player,
 } from "@/lib/game-state";
 import { toast } from "sonner";
 import { Copy } from "lucide-react";
@@ -22,9 +28,10 @@ export const Route = createFileRoute("/_authenticated/scoreboard/$courtId")({
 function CourtControl() {
   const { courtId } = Route.useParams();
   const s = useGameState(courtId);
+  const events = useGameEvents(courtId);
   const [, setNow] = useState(0);
-  const [threeHomePulse, setThreeHomePulse] = useState(0);
-  const [threeAwayPulse, setThreeAwayPulse] = useState(0);
+  const [homeActive, setHomeActive] = useState<Player | null>(null);
+  const [awayActive, setAwayActive] = useState<Player | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => setNow((n) => n + 1), 100);
@@ -42,11 +49,12 @@ function CourtControl() {
 
   const gameClock = computeGameClockSeconds(s);
   const shotTenths = computeShotClockTenths(s);
+  const isFull = s.mode === "full";
 
   return (
     <div className="min-h-screen bg-background">
       <TopNav />
-      <main className="mx-auto max-w-[1280px] px-6 py-6">
+      <main className="mx-auto max-w-[1440px] px-6 py-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-muted-foreground">{s.mode.toUpperCase()} MODE</p>
@@ -61,23 +69,52 @@ function CourtControl() {
           <div className="space-y-6">
             <ClockBar s={s} gameClock={gameClock} shotTenths={shotTenths} />
             <div className="grid gap-6 md:grid-cols-2">
-              <TeamPanel
-                side="home"
-                s={s}
-                onThree={() => setThreeHomePulse((n) => n + 1)}
-                threePulse={threeHomePulse}
-              />
-              <TeamPanel
-                side="away"
-                s={s}
-                onThree={() => setThreeAwayPulse((n) => n + 1)}
-                threePulse={threeAwayPulse}
-              />
+              <TeamPanel side="home" s={s} />
+              <TeamPanel side="away" s={s} />
             </div>
+
+            {isFull && (
+              <>
+                <div className="grid gap-6 md:grid-cols-2">
+                  <RosterPanel s={s} side="home" activePlayerId={homeActive?.id ?? null} onSelectPlayer={setHomeActive} />
+                  <RosterPanel s={s} side="away" activePlayerId={awayActive?.id ?? null} onSelectPlayer={setAwayActive} />
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  {homeActive ? (
+                    <PlayByPlayPad s={s} side="home" player={homeActive} onCleared={() => setHomeActive(null)} />
+                  ) : (
+                    <EmptyPad side="home" s={s} />
+                  )}
+                  {awayActive ? (
+                    <PlayByPlayPad s={s} side="away" player={awayActive} onCleared={() => setAwayActive(null)} />
+                  ) : (
+                    <EmptyPad side="away" s={s} />
+                  )}
+                </div>
+
+                <div className="grid gap-6 md:grid-cols-2">
+                  <BoxScoreTable s={s} side="home" events={events} />
+                  <BoxScoreTable s={s} side="away" events={events} />
+                </div>
+              </>
+            )}
           </div>
           <Sidebar s={s} />
         </div>
       </main>
+    </div>
+  );
+}
+
+function EmptyPad({ side, s }: { side: "home" | "away"; s: ReturnType<typeof useGameState> }) {
+  if (!s) return null;
+  const teamId = side === "home" ? s.home_team_id : s.away_team_id;
+  return (
+    <div className="grid place-items-center rounded-2xl border-2 border-dashed bg-card/50 p-6 text-center text-xs text-muted-foreground">
+      {teamId
+        ? "Tap an on-court player to log play-by-play."
+        : "Pick a team to enable play-by-play tracking."}
     </div>
   );
 }
@@ -165,14 +202,7 @@ function ClockBtn({ children, onClick }: { children: React.ReactNode; onClick: (
   );
 }
 
-function TeamPanel({
-  side, s, onThree, threePulse,
-}: {
-  side: "home" | "away";
-  s: NonNullable<ReturnType<typeof useGameState>>;
-  onThree: () => void;
-  threePulse: number;
-}) {
+function TeamPanel({ side, s }: { side: "home" | "away"; s: NonNullable<ReturnType<typeof useGameState>> }) {
   const isHome = side === "home";
   const name = isHome ? s.home_name : s.away_name;
   const color = isHome ? s.home_color : s.away_color;
@@ -180,6 +210,7 @@ function TeamPanel({
   const fouls = isHome ? s.home_fouls : s.away_fouls;
   const timeouts = isHome ? s.home_timeouts : s.away_timeouts;
   const opponentFouls = isHome ? s.away_fouls : s.home_fouls;
+  const threePulse = isHome ? s.three_pulse_home : s.three_pulse_away;
   const inBonus = opponentFouls >= 5;
 
   const [editing, setEditing] = useState(false);
@@ -199,11 +230,7 @@ function TeamPanel({
         <div>
           <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">{isHome ? "HOME" : "AWAY"}</p>
           {editing ? (
-            <input
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              className="mt-1 rounded-md border bg-background px-2 py-1 text-xl font-bold"
-            />
+            <input value={nameInput} onChange={(e) => setNameInput(e.target.value)} className="mt-1 rounded-md border bg-background px-2 py-1 text-xl font-bold" />
           ) : (
             <h3 className="text-2xl font-black" style={{ color }}>{name}</h3>
           )}
@@ -226,17 +253,17 @@ function TeamPanel({
       </div>
 
       <div className="mt-4 grid grid-cols-3 gap-2 text-xs">
-        <ScoreBtn label="+3" onClick={() => { addScore(s, side, 3); onThree(); logEvent(s, { side, type: "3PT_MADE", points: 3 }); }} accent={color} />
-        <ScoreBtn label="+2" onClick={() => { addScore(s, side, 2); logEvent(s, { side, type: "2PT_MADE", points: 2 }); }} accent={color} />
-        <ScoreBtn label="+1" onClick={() => { addScore(s, side, 1); logEvent(s, { side, type: "FT_MADE", points: 1 }); }} accent={color} />
-        <ScoreBtn label="-1" onClick={() => { addScore(s, side, -1); logEvent(s, { side, type: "ADJUST", points: -1 }); }} />
-        <ScoreBtn label="-2" onClick={() => { addScore(s, side, -2); logEvent(s, { side, type: "ADJUST", points: -2 }); }} />
+        <ScoreBtn label="+3" onClick={() => scoreFromAction(s, side, "3PT_MADE")} accent={color} />
+        <ScoreBtn label="+2" onClick={() => scoreFromAction(s, side, "2PT_MADE")} accent={color} />
+        <ScoreBtn label="+1" onClick={() => scoreFromAction(s, side, "FT_MADE")} accent={color} />
+        <ScoreBtn label="-1" onClick={() => addScore(s, side, -1)} />
+        <ScoreBtn label="-2" onClick={() => addScore(s, side, -2)} />
         <ScoreBtn label="RST" onClick={() => { if (confirm(`Reset ${name}'s score to 0?`)) resetScore(s, side); }} danger />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        <StatStepper label="Fouls" value={fouls} max={5} onAdd={() => { addFoul(s, side, 1); logEvent(s, { side, type: "FOUL" }); }} onSub={() => addFoul(s, side, -1)} />
-        <StatStepper label="Timeouts" value={timeouts} onAdd={() => addTimeout(s, side, 1)} onSub={() => { addTimeout(s, side, -1); logEvent(s, { side, type: "TIMEOUT" }); }} />
+        <StatStepper label="Fouls" value={fouls} max={5} onAdd={() => { addFoul(s, side, 1); logPlayerStat(s, side, "FOUL"); }} onSub={() => addFoul(s, side, -1)} />
+        <StatStepper label="Timeouts" value={timeouts} onAdd={() => addTimeout(s, side, 1)} onSub={() => { addTimeout(s, side, -1); logPlayerStat(s, side, "TIMEOUT"); }} />
       </div>
     </div>
   );
@@ -306,7 +333,9 @@ function Sidebar({ s }: { s: NonNullable<ReturnType<typeof useGameState>> }) {
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">Quick links</p>
         <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
           <Link to="/timekeeper/$courtId" params={{ courtId: s.court_id }} className="rounded-md border px-3 py-2 text-center font-semibold hover:bg-secondary">Time Keeper</Link>
+          <Link to="/game-log/$courtId" params={{ courtId: s.court_id }} className="rounded-md border px-3 py-2 text-center font-semibold hover:bg-secondary">Game Log</Link>
           <Link to="/teams" className="rounded-md border px-3 py-2 text-center font-semibold hover:bg-secondary">Teams</Link>
+          <Link to="/tournaments" className="rounded-md border px-3 py-2 text-center font-semibold hover:bg-secondary">Tournaments</Link>
         </div>
       </div>
     </aside>
