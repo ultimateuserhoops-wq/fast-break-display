@@ -6,23 +6,36 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
  */
 export function ObsShell({ children }: { children: React.ReactNode }) {
   const wrapRef = useRef<HTMLDivElement>(null);
-  const [scale, setScale] = useState(1);
+  const [scale, setScale] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    return Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+  });
 
   useLayoutEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
     function fit() {
-      const el = wrapRef.current;
-      if (!el) return;
-      const w = el.clientWidth;
-      const h = el.clientHeight;
-      setScale(Math.min(w / 1920, h / 1080));
+      const w = el!.clientWidth || window.innerWidth;
+      const h = el!.clientHeight || window.innerHeight;
+      const next = Math.min(w / 1920, h / 1080);
+      if (next > 0) setScale(next);
     }
     fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
     window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+    };
   }, []);
 
   return (
-    <div ref={wrapRef} className="relative h-screen w-screen overflow-hidden" style={{ background: "#000", color: "#fff" }}>
+    <div
+      ref={wrapRef}
+      className="fixed inset-0 overflow-hidden"
+      style={{ background: "#000", color: "#fff" }}
+    >
       <div
         className="absolute left-1/2 top-1/2"
         style={{

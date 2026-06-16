@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ObsShell, useTick } from "@/components/obs/ObsShell";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useGameState, computeGameClockSeconds, computeShotClockTenths,
   formatClock, formatShotClock, type GameState,
@@ -27,15 +27,15 @@ function ObsDisplay2() {
 
 function useThreeFlash(value: number) {
   const [flash, setFlash] = useState(false);
-  const [last, setLast] = useState(value);
+  const lastRef = useRef(value);
   useEffect(() => {
-    if (value === last) return;
-    setLast(value);
+    if (value === lastRef.current) return;
+    lastRef.current = value;
     if (value === 0) return;
     setFlash(true);
     const t = setTimeout(() => setFlash(false), 1100);
     return () => clearTimeout(t);
-  }, [value, last]);
+  }, [value]);
   return flash;
 }
 
