@@ -11,14 +11,17 @@ export function ScoreBox({
 }) {
   const [showThree, setShowThree] = useState(false);
   const [animKey, setAnimKey] = useState(0);
+  const [lastPulse, setLastPulse] = useState(threePulse);
 
   useEffect(() => {
+    if (threePulse === lastPulse) return;
+    setLastPulse(threePulse);
     if (threePulse === 0) return;
     setShowThree(true);
     setAnimKey((k) => k + 1);
     const t = setTimeout(() => setShowThree(false), 900);
     return () => clearTimeout(t);
-  }, [threePulse]);
+  }, [threePulse, lastPulse]);
 
   return (
     <div
