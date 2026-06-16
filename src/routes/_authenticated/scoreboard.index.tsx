@@ -6,7 +6,7 @@ import { ModeCard } from "@/components/ModeCard";
 import { useCourts, patchGameState } from "@/lib/game-state";
 import { Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authenticated/scoreboard")({
+export const Route = createFileRoute("/_authenticated/scoreboard/")({
   head: () => ({ meta: [{ title: "Scoreboard — BDC" }] }),
   component: ScoreboardLanding,
 });

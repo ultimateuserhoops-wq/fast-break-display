@@ -14,7 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTournamentsRouteImport } from './routes/_authenticated/tournaments'
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
-import { Route as AuthenticatedScoreboardRouteImport } from './routes/_authenticated/scoreboard'
+import { Route as AuthenticatedScoreboardIndexRouteImport } from './routes/_authenticated/scoreboard.index'
 import { Route as ObsTimerCourtIdRouteImport } from './routes/obs.timer.$courtId'
 import { Route as ObsDisplay2CourtIdRouteImport } from './routes/obs.display2.$courtId'
 import { Route as ObsDisplay1CourtIdRouteImport } from './routes/obs.display1.$courtId'
@@ -48,11 +48,12 @@ const AuthenticatedTeamsRoute = AuthenticatedTeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedScoreboardRoute = AuthenticatedScoreboardRouteImport.update({
-  id: '/scoreboard',
-  path: '/scoreboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedScoreboardIndexRoute =
+  AuthenticatedScoreboardIndexRouteImport.update({
+    id: '/scoreboard/',
+    path: '/scoreboard/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ObsTimerCourtIdRoute = ObsTimerCourtIdRouteImport.update({
   id: '/obs/timer/$courtId',
   path: '/obs/timer/$courtId',
@@ -81,9 +82,9 @@ const AuthenticatedTimekeeperCourtIdRoute =
   } as any)
 const AuthenticatedScoreboardCourtIdRoute =
   AuthenticatedScoreboardCourtIdRouteImport.update({
-    id: '/$courtId',
-    path: '/$courtId',
-    getParentRoute: () => AuthenticatedScoreboardRoute,
+    id: '/scoreboard/$courtId',
+    path: '/scoreboard/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedGameLogCourtIdRoute =
   AuthenticatedGameLogCourtIdRouteImport.update({
@@ -95,7 +96,6 @@ const AuthenticatedGameLogCourtIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/teams': typeof AuthenticatedTeamsRoute
   '/tournaments': typeof AuthenticatedTournamentsRoute
   '/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
@@ -105,11 +105,11 @@ export interface FileRoutesByFullPath {
   '/obs/display1/$courtId': typeof ObsDisplay1CourtIdRoute
   '/obs/display2/$courtId': typeof ObsDisplay2CourtIdRoute
   '/obs/timer/$courtId': typeof ObsTimerCourtIdRoute
+  '/scoreboard/': typeof AuthenticatedScoreboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/teams': typeof AuthenticatedTeamsRoute
   '/tournaments': typeof AuthenticatedTournamentsRoute
   '/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
@@ -119,13 +119,13 @@ export interface FileRoutesByTo {
   '/obs/display1/$courtId': typeof ObsDisplay1CourtIdRoute
   '/obs/display2/$courtId': typeof ObsDisplay2CourtIdRoute
   '/obs/timer/$courtId': typeof ObsTimerCourtIdRoute
+  '/scoreboard': typeof AuthenticatedScoreboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/_authenticated/tournaments': typeof AuthenticatedTournamentsRoute
   '/_authenticated/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
@@ -135,13 +135,13 @@ export interface FileRoutesById {
   '/obs/display1/$courtId': typeof ObsDisplay1CourtIdRoute
   '/obs/display2/$courtId': typeof ObsDisplay2CourtIdRoute
   '/obs/timer/$courtId': typeof ObsTimerCourtIdRoute
+  '/_authenticated/scoreboard/': typeof AuthenticatedScoreboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/scoreboard'
     | '/teams'
     | '/tournaments'
     | '/game-log/$courtId'
@@ -151,11 +151,11 @@ export interface FileRouteTypes {
     | '/obs/display1/$courtId'
     | '/obs/display2/$courtId'
     | '/obs/timer/$courtId'
+    | '/scoreboard/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/scoreboard'
     | '/teams'
     | '/tournaments'
     | '/game-log/$courtId'
@@ -165,12 +165,12 @@ export interface FileRouteTypes {
     | '/obs/display1/$courtId'
     | '/obs/display2/$courtId'
     | '/obs/timer/$courtId'
+    | '/scoreboard'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/scoreboard'
     | '/_authenticated/teams'
     | '/_authenticated/tournaments'
     | '/_authenticated/game-log/$courtId'
@@ -180,6 +180,7 @@ export interface FileRouteTypes {
     | '/obs/display1/$courtId'
     | '/obs/display2/$courtId'
     | '/obs/timer/$courtId'
+    | '/_authenticated/scoreboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -229,11 +230,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/scoreboard': {
-      id: '/_authenticated/scoreboard'
+    '/_authenticated/scoreboard/': {
+      id: '/_authenticated/scoreboard/'
       path: '/scoreboard'
-      fullPath: '/scoreboard'
-      preLoaderRoute: typeof AuthenticatedScoreboardRouteImport
+      fullPath: '/scoreboard/'
+      preLoaderRoute: typeof AuthenticatedScoreboardIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/obs/timer/$courtId': {
@@ -273,10 +274,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/scoreboard/$courtId': {
       id: '/_authenticated/scoreboard/$courtId'
-      path: '/$courtId'
+      path: '/scoreboard/$courtId'
       fullPath: '/scoreboard/$courtId'
       preLoaderRoute: typeof AuthenticatedScoreboardCourtIdRouteImport
-      parentRoute: typeof AuthenticatedScoreboardRoute
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/game-log/$courtId': {
       id: '/_authenticated/game-log/$courtId'
@@ -288,34 +289,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedScoreboardRouteChildren {
-  AuthenticatedScoreboardCourtIdRoute: typeof AuthenticatedScoreboardCourtIdRoute
-}
-
-const AuthenticatedScoreboardRouteChildren: AuthenticatedScoreboardRouteChildren =
-  {
-    AuthenticatedScoreboardCourtIdRoute: AuthenticatedScoreboardCourtIdRoute,
-  }
-
-const AuthenticatedScoreboardRouteWithChildren =
-  AuthenticatedScoreboardRoute._addFileChildren(
-    AuthenticatedScoreboardRouteChildren,
-  )
-
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedScoreboardRoute: typeof AuthenticatedScoreboardRouteWithChildren
   AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
   AuthenticatedTournamentsRoute: typeof AuthenticatedTournamentsRoute
   AuthenticatedGameLogCourtIdRoute: typeof AuthenticatedGameLogCourtIdRoute
+  AuthenticatedScoreboardCourtIdRoute: typeof AuthenticatedScoreboardCourtIdRoute
   AuthenticatedTimekeeperCourtIdRoute: typeof AuthenticatedTimekeeperCourtIdRoute
+  AuthenticatedScoreboardIndexRoute: typeof AuthenticatedScoreboardIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedScoreboardRoute: AuthenticatedScoreboardRouteWithChildren,
   AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
   AuthenticatedTournamentsRoute: AuthenticatedTournamentsRoute,
   AuthenticatedGameLogCourtIdRoute: AuthenticatedGameLogCourtIdRoute,
+  AuthenticatedScoreboardCourtIdRoute: AuthenticatedScoreboardCourtIdRoute,
   AuthenticatedTimekeeperCourtIdRoute: AuthenticatedTimekeeperCourtIdRoute,
+  AuthenticatedScoreboardIndexRoute: AuthenticatedScoreboardIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
