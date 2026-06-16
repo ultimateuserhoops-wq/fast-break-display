@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ObsShell, useTick } from "@/components/obs/ObsShell";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useGameState, computeGameClockSeconds, computeShotClockTenths,
   formatClock, formatShotClock, type GameState,
