@@ -51,7 +51,7 @@ function Espn1Style({ s }: { s: GameState }) {
   const game = computeGameClockSeconds(s);
   const shot = computeShotClockTenths(s);
   const fH = useThreeFlash(s.three_pulse_home);
-  const fA = useThreePulse(s.three_pulse_away);
+  const fA = useThreeFlash(s.three_pulse_away);
   return (
     <div className="flex h-screen items-end justify-center pb-16">
       <div className="flex h-16 items-stretch overflow-hidden rounded-md shadow-2xl">
@@ -69,7 +69,6 @@ function Espn1Style({ s }: { s: GameState }) {
     </div>
   );
 }
-const useThreePulse = useThreeFlash;
 
 function Side({ color, abbrText, score, reverse, flash }: { color: string; abbrText: string; score: number; reverse?: boolean; flash?: boolean }) {
   return (
