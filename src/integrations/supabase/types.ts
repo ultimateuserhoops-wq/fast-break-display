@@ -141,6 +141,8 @@ export type Database = {
           shot_clock_running: boolean
           shot_clock_started_at: string | null
           shot_clock_tenths: number
+          three_pulse_away: number
+          three_pulse_home: number
           timer_style: string
           tournament_name: string
           updated_at: string
@@ -177,6 +179,8 @@ export type Database = {
           shot_clock_running?: boolean
           shot_clock_started_at?: string | null
           shot_clock_tenths?: number
+          three_pulse_away?: number
+          three_pulse_home?: number
           timer_style?: string
           tournament_name?: string
           updated_at?: string
@@ -213,6 +217,8 @@ export type Database = {
           shot_clock_running?: boolean
           shot_clock_started_at?: string | null
           shot_clock_tenths?: number
+          three_pulse_away?: number
+          three_pulse_home?: number
           timer_style?: string
           tournament_name?: string
           updated_at?: string
