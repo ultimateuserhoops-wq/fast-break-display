@@ -21,6 +21,7 @@ import { Route as ObsDisplay1CourtIdRouteImport } from './routes/obs.display1.$c
 import { Route as ApiPublicSeedOperatorRouteImport } from './routes/api/public/seed-operator'
 import { Route as AuthenticatedTimekeeperCourtIdRouteImport } from './routes/_authenticated/timekeeper.$courtId'
 import { Route as AuthenticatedScoreboardCourtIdRouteImport } from './routes/_authenticated/scoreboard.$courtId'
+import { Route as AuthenticatedGameLogCourtIdRouteImport } from './routes/_authenticated/game-log.$courtId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -84,6 +85,12 @@ const AuthenticatedScoreboardCourtIdRoute =
     path: '/$courtId',
     getParentRoute: () => AuthenticatedScoreboardRoute,
   } as any)
+const AuthenticatedGameLogCourtIdRoute =
+  AuthenticatedGameLogCourtIdRouteImport.update({
+    id: '/game-log/$courtId',
+    path: '/game-log/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/teams': typeof AuthenticatedTeamsRoute
   '/tournaments': typeof AuthenticatedTournamentsRoute
+  '/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
   '/scoreboard/$courtId': typeof AuthenticatedScoreboardCourtIdRoute
   '/timekeeper/$courtId': typeof AuthenticatedTimekeeperCourtIdRoute
   '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
@@ -104,6 +112,7 @@ export interface FileRoutesByTo {
   '/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/teams': typeof AuthenticatedTeamsRoute
   '/tournaments': typeof AuthenticatedTournamentsRoute
+  '/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
   '/scoreboard/$courtId': typeof AuthenticatedScoreboardCourtIdRoute
   '/timekeeper/$courtId': typeof AuthenticatedTimekeeperCourtIdRoute
   '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
@@ -119,6 +128,7 @@ export interface FileRoutesById {
   '/_authenticated/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/_authenticated/tournaments': typeof AuthenticatedTournamentsRoute
+  '/_authenticated/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
   '/_authenticated/scoreboard/$courtId': typeof AuthenticatedScoreboardCourtIdRoute
   '/_authenticated/timekeeper/$courtId': typeof AuthenticatedTimekeeperCourtIdRoute
   '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
@@ -134,6 +144,7 @@ export interface FileRouteTypes {
     | '/scoreboard'
     | '/teams'
     | '/tournaments'
+    | '/game-log/$courtId'
     | '/scoreboard/$courtId'
     | '/timekeeper/$courtId'
     | '/api/public/seed-operator'
@@ -147,6 +158,7 @@ export interface FileRouteTypes {
     | '/scoreboard'
     | '/teams'
     | '/tournaments'
+    | '/game-log/$courtId'
     | '/scoreboard/$courtId'
     | '/timekeeper/$courtId'
     | '/api/public/seed-operator'
@@ -161,6 +173,7 @@ export interface FileRouteTypes {
     | '/_authenticated/scoreboard'
     | '/_authenticated/teams'
     | '/_authenticated/tournaments'
+    | '/_authenticated/game-log/$courtId'
     | '/_authenticated/scoreboard/$courtId'
     | '/_authenticated/timekeeper/$courtId'
     | '/api/public/seed-operator'
@@ -265,6 +278,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedScoreboardCourtIdRouteImport
       parentRoute: typeof AuthenticatedScoreboardRoute
     }
+    '/_authenticated/game-log/$courtId': {
+      id: '/_authenticated/game-log/$courtId'
+      path: '/game-log/$courtId'
+      fullPath: '/game-log/$courtId'
+      preLoaderRoute: typeof AuthenticatedGameLogCourtIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -286,6 +306,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedScoreboardRoute: typeof AuthenticatedScoreboardRouteWithChildren
   AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
   AuthenticatedTournamentsRoute: typeof AuthenticatedTournamentsRoute
+  AuthenticatedGameLogCourtIdRoute: typeof AuthenticatedGameLogCourtIdRoute
   AuthenticatedTimekeeperCourtIdRoute: typeof AuthenticatedTimekeeperCourtIdRoute
 }
 
@@ -293,6 +314,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedScoreboardRoute: AuthenticatedScoreboardRouteWithChildren,
   AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
   AuthenticatedTournamentsRoute: AuthenticatedTournamentsRoute,
+  AuthenticatedGameLogCourtIdRoute: AuthenticatedGameLogCourtIdRoute,
   AuthenticatedTimekeeperCourtIdRoute: AuthenticatedTimekeeperCourtIdRoute,
 }
 
