@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedTournamentsRouteImport } from './routes/_authenticated/tournaments'
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
+import { Route as AuthenticatedScoreboardRouteImport } from './routes/_authenticated/scoreboard'
 import { Route as AuthenticatedScoreboardIndexRouteImport } from './routes/_authenticated/scoreboard.index'
 import { Route as ObsTimerCourtIdRouteImport } from './routes/obs.timer.$courtId'
 import { Route as ObsDisplay2CourtIdRouteImport } from './routes/obs.display2.$courtId'
@@ -48,11 +49,16 @@ const AuthenticatedTeamsRoute = AuthenticatedTeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedScoreboardRoute = AuthenticatedScoreboardRouteImport.update({
+  id: '/scoreboard',
+  path: '/scoreboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedScoreboardIndexRoute =
   AuthenticatedScoreboardIndexRouteImport.update({
-    id: '/scoreboard/',
-    path: '/scoreboard/',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedScoreboardRoute,
   } as any)
 const ObsTimerCourtIdRoute = ObsTimerCourtIdRouteImport.update({
   id: '/obs/timer/$courtId',
@@ -82,9 +88,9 @@ const AuthenticatedTimekeeperCourtIdRoute =
   } as any)
 const AuthenticatedScoreboardCourtIdRoute =
   AuthenticatedScoreboardCourtIdRouteImport.update({
-    id: '/scoreboard/$courtId',
-    path: '/scoreboard/$courtId',
-    getParentRoute: () => AuthenticatedRouteRoute,
+    id: '/$courtId',
+    path: '/$courtId',
+    getParentRoute: () => AuthenticatedScoreboardRoute,
   } as any)
 const AuthenticatedGameLogCourtIdRoute =
   AuthenticatedGameLogCourtIdRouteImport.update({
@@ -96,6 +102,7 @@ const AuthenticatedGameLogCourtIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/teams': typeof AuthenticatedTeamsRoute
   '/tournaments': typeof AuthenticatedTournamentsRoute
   '/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
@@ -126,6 +133,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
   '/_authenticated/teams': typeof AuthenticatedTeamsRoute
   '/_authenticated/tournaments': typeof AuthenticatedTournamentsRoute
   '/_authenticated/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
@@ -142,6 +150,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/scoreboard'
     | '/teams'
     | '/tournaments'
     | '/game-log/$courtId'
@@ -171,6 +180,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/scoreboard'
     | '/_authenticated/teams'
     | '/_authenticated/tournaments'
     | '/_authenticated/game-log/$courtId'
@@ -230,12 +240,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/scoreboard': {
+      id: '/_authenticated/scoreboard'
+      path: '/scoreboard'
+      fullPath: '/scoreboard'
+      preLoaderRoute: typeof AuthenticatedScoreboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/scoreboard/': {
       id: '/_authenticated/scoreboard/'
-      path: '/scoreboard'
+      path: '/'
       fullPath: '/scoreboard/'
       preLoaderRoute: typeof AuthenticatedScoreboardIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedScoreboardRoute
     }
     '/obs/timer/$courtId': {
       id: '/obs/timer/$courtId'
@@ -274,10 +291,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/scoreboard/$courtId': {
       id: '/_authenticated/scoreboard/$courtId'
-      path: '/scoreboard/$courtId'
+      path: '/$courtId'
       fullPath: '/scoreboard/$courtId'
       preLoaderRoute: typeof AuthenticatedScoreboardCourtIdRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      parentRoute: typeof AuthenticatedScoreboardRoute
     }
     '/_authenticated/game-log/$courtId': {
       id: '/_authenticated/game-log/$courtId'
@@ -289,22 +306,36 @@ declare module '@tanstack/react-router' {
   }
 }
 
-interface AuthenticatedRouteRouteChildren {
-  AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
-  AuthenticatedTournamentsRoute: typeof AuthenticatedTournamentsRoute
-  AuthenticatedGameLogCourtIdRoute: typeof AuthenticatedGameLogCourtIdRoute
+interface AuthenticatedScoreboardRouteChildren {
   AuthenticatedScoreboardCourtIdRoute: typeof AuthenticatedScoreboardCourtIdRoute
-  AuthenticatedTimekeeperCourtIdRoute: typeof AuthenticatedTimekeeperCourtIdRoute
   AuthenticatedScoreboardIndexRoute: typeof AuthenticatedScoreboardIndexRoute
 }
 
+const AuthenticatedScoreboardRouteChildren: AuthenticatedScoreboardRouteChildren =
+  {
+    AuthenticatedScoreboardCourtIdRoute: AuthenticatedScoreboardCourtIdRoute,
+    AuthenticatedScoreboardIndexRoute: AuthenticatedScoreboardIndexRoute,
+  }
+
+const AuthenticatedScoreboardRouteWithChildren =
+  AuthenticatedScoreboardRoute._addFileChildren(
+    AuthenticatedScoreboardRouteChildren,
+  )
+
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedScoreboardRoute: typeof AuthenticatedScoreboardRouteWithChildren
+  AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
+  AuthenticatedTournamentsRoute: typeof AuthenticatedTournamentsRoute
+  AuthenticatedGameLogCourtIdRoute: typeof AuthenticatedGameLogCourtIdRoute
+  AuthenticatedTimekeeperCourtIdRoute: typeof AuthenticatedTimekeeperCourtIdRoute
+}
+
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedScoreboardRoute: AuthenticatedScoreboardRouteWithChildren,
   AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
   AuthenticatedTournamentsRoute: AuthenticatedTournamentsRoute,
   AuthenticatedGameLogCourtIdRoute: AuthenticatedGameLogCourtIdRoute,
-  AuthenticatedScoreboardCourtIdRoute: AuthenticatedScoreboardCourtIdRoute,
   AuthenticatedTimekeeperCourtIdRoute: AuthenticatedTimekeeperCourtIdRoute,
-  AuthenticatedScoreboardIndexRoute: AuthenticatedScoreboardIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -322,13 +353,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
