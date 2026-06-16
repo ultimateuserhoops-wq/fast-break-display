@@ -27,7 +27,7 @@ function HubPage() {
 
         <RowSection title="GAME MANAGEMENT">
           <HubCard to="/scoreboard" icon={<Activity className="h-5 w-5" />} title="Scoreboard" desc="Pick a court and control the live game state." />
-          <HubCard to="/scoreboard" icon={<ClipboardList className="h-5 w-5" />} title="Game Log" desc="Play-by-play history per court." />
+          <HubCard to="/game-log/$courtId" params={{ courtId: "main" }} icon={<ClipboardList className="h-5 w-5" />} title="Game Log" desc="Play-by-play history per court." />
           <HubCard to="/scoreboard" icon={<BookUser className="h-5 w-5" />} title="Player Stats" desc="Box scores derived from play-by-play." />
         </RowSection>
 
