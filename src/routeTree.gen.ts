@@ -10,33 +10,43 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicSeedOperatorRouteImport } from './routes/api/public/seed-operator'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSeedOperatorRoute = ApiPublicSeedOperatorRouteImport.update({
+  id: '/api/public/seed-operator',
+  path: '/api/public/seed-operator',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths: '/' | '/api/public/seed-operator'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to: '/' | '/api/public/seed-operator'
+  id: '__root__' | '/' | '/api/public/seed-operator'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiPublicSeedOperatorRoute: typeof ApiPublicSeedOperatorRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +58,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/seed-operator': {
+      id: '/api/public/seed-operator'
+      path: '/api/public/seed-operator'
+      fullPath: '/api/public/seed-operator'
+      preLoaderRoute: typeof ApiPublicSeedOperatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiPublicSeedOperatorRoute: ApiPublicSeedOperatorRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
