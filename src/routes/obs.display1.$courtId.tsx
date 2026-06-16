@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ObsShell, useTick } from "@/components/obs/ObsShell";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useGameState, computeGameClockSeconds, formatClock, type GameState } from "@/lib/game-state";
 
 export const Route = createFileRoute("/obs/display1/$courtId")({
