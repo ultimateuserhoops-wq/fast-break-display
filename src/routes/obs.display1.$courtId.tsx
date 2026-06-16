@@ -24,17 +24,17 @@ function ObsDisplay1() {
 
 /* ---------- Shared bits ---------- */
 
-function useThreePulse(side: "home" | "away", value: number) {
+function useThreePulse(_side: "home" | "away", value: number) {
   const [show, setShow] = useState(false);
-  const [last, setLast] = useState(value);
+  const lastRef = useRef(value);
   useEffect(() => {
-    if (value === last) return;
-    setLast(value);
+    if (value === lastRef.current) return;
+    lastRef.current = value;
     if (value === 0) return;
     setShow(true);
     const t = setTimeout(() => setShow(false), 1100);
     return () => clearTimeout(t);
-  }, [value, last, side]);
+  }, [value]);
   return show;
 }
 
