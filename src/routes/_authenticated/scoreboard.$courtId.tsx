@@ -82,8 +82,7 @@ function CourtControl() {
   );
 }
 
-function TournamentBar({ s }: { s: ReturnType<typeof useGameState> & {} }) {
-  if (!s) return null;
+function TournamentBar({ s }: { s: NonNullable<ReturnType<typeof useGameState>> }) {
   const [name, setName] = useState(s.tournament_name);
   useEffect(() => setName(s.tournament_name), [s.tournament_name]);
   return (
