@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function ScoreBox({
   score,
@@ -11,17 +11,17 @@ export function ScoreBox({
 }) {
   const [showThree, setShowThree] = useState(false);
   const [animKey, setAnimKey] = useState(0);
-  const [lastPulse, setLastPulse] = useState(threePulse);
+  const lastRef = useRef(threePulse);
 
   useEffect(() => {
-    if (threePulse === lastPulse) return;
-    setLastPulse(threePulse);
+    if (threePulse === lastRef.current) return;
+    lastRef.current = threePulse;
     if (threePulse === 0) return;
     setShowThree(true);
     setAnimKey((k) => k + 1);
-    const t = setTimeout(() => setShowThree(false), 900);
+    const t = setTimeout(() => setShowThree(false), 1000);
     return () => clearTimeout(t);
-  }, [threePulse, lastPulse]);
+  }, [threePulse]);
 
   return (
     <div
