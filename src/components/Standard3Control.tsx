@@ -107,6 +107,7 @@ function TeamBadge({ name, color, logo }: { name: string; color: string; logo: s
 function TeamEditPanel({ s, side, onClose }: { s: GameState; side: "home" | "away"; onClose: () => void }) {
   const isHome = side === "home";
   const [name, setName] = useState(isHome ? s.home_name : s.away_name);
+  const [abbr, setAbbr] = useState(isHome ? s.home_abbr : s.away_abbr);
   const [logoUrl, setLogoUrl] = useState((isHome ? s.home_logo : s.away_logo) ?? "");
   const [busy, setBusy] = useState(false);
 
@@ -120,8 +121,8 @@ function TeamEditPanel({ s, side, onClose }: { s: GameState; side: "home" | "awa
   }
   async function save() {
     const patch = isHome
-      ? { home_name: name.trim() || s.home_name, home_logo: logoUrl.trim() || null }
-      : { away_name: name.trim() || s.away_name, away_logo: logoUrl.trim() || null };
+      ? { home_name: name.trim() || s.home_name, home_abbr: abbr.trim().toUpperCase(), home_logo: logoUrl.trim() || null }
+      : { away_name: name.trim() || s.away_name, away_abbr: abbr.trim().toUpperCase(), away_logo: logoUrl.trim() || null };
     await patchGameState(s.court_id, patch);
     onClose();
   }
@@ -135,8 +136,14 @@ function TeamEditPanel({ s, side, onClose }: { s: GameState; side: "home" | "awa
         placeholder="Team name"
         className="w-full rounded-md border border-white/15 bg-black px-2.5 py-1.5 text-sm font-semibold text-white outline-none focus:border-white/40"
       />
+      <input
+        value={abbr}
+        onChange={(e) => setAbbr(e.target.value.slice(0, 6))}
+        placeholder="Abbreviation (e.g. BDC) — shown on the scoreboard instead of the full name"
+        className="mt-2 w-full rounded-md border border-white/15 bg-black px-2.5 py-1.5 text-sm font-semibold uppercase tracking-wide text-white outline-none focus:border-white/40"
+      />
       <div className="mt-3 flex items-center gap-2">
-        <TeamBadge name={name || "?"} color={isHome ? s.home_color : s.away_color} logo={logoUrl || null} />
+        <TeamBadge name={abbr || name || "?"} color={isHome ? s.home_color : s.away_color} logo={logoUrl || null} />
         <div className="flex-1">
           <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-white/20 px-2 py-1.5 text-[11px] font-bold text-white/80 hover:bg-white/10">
             <ImageIcon className="h-3.5 w-3.5" /> {busy ? "Uploading…" : "Upload logo"}
@@ -161,7 +168,9 @@ function TeamEditPanel({ s, side, onClose }: { s: GameState; side: "home" | "awa
 /* ---- Stable team blocks (never remount on a tick) ---- */
 function ScoreBlock({ s, side }: { s: GameState; side: "home" | "away" }) {
   const isHome = side === "home";
-  const name = isHome ? s.home_name : s.away_name;
+  const fullName = isHome ? s.home_name : s.away_name;
+  const abbr = isHome ? s.home_abbr : s.away_abbr;
+  const displayName = abbr || fullName; // show the abbreviation once one's been entered
   const color = isHome ? s.home_color : s.away_color;
   const score = isHome ? s.home_score : s.away_score;
   const logo = (isHome ? s.home_logo : s.away_logo) ?? null;
@@ -169,8 +178,8 @@ function ScoreBlock({ s, side }: { s: GameState; side: "home" | "away" }) {
   return (
     <div className="relative flex flex-col items-center gap-2">
       <button onClick={() => setEditing((v) => !v)} className="flex max-w-[15rem] items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-white/10" title="Edit team name / logo">
-        <TeamBadge name={name} color={color} logo={logo} />
-        <span className="truncate text-3xl font-black uppercase tracking-wide" style={{ color }}>{name}</span>
+        <TeamBadge name={displayName} color={color} logo={logo} />
+        <span className="truncate text-3xl font-black uppercase tracking-wide" style={{ color }}>{displayName}</span>
         <Pencil className="h-3.5 w-3.5 shrink-0 text-white/35" />
       </button>
       {editing && <TeamEditPanel s={s} side={side} onClose={() => setEditing(false)} />}

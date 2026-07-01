@@ -10,6 +10,9 @@ import { FullscreenToggle } from "@/components/obs/FullscreenToggle";
 import { ShotClockToggle } from "@/components/obs/ShotClockToggle";
 import { PossessionBar } from "@/components/Possession";
 import { usePossession } from "@/lib/possession";
+import bdseaEventLogo from "@/assets/bdsea-event-logo.png";
+
+const SB_URL = (import.meta as { env?: Record<string, string> }).env?.VITE_SUPABASE_URL || "";
 
 // Heavy outline so light team colours stay legible behind white scoreboard digits.
 const SCORE_INK = { WebkitTextStroke: "2px rgba(0,0,0,0.55)", textShadow: "0 2px 10px rgba(0,0,0,0.6)" } as const;
@@ -36,10 +39,13 @@ function ObsDisplay1() {
   const { hideShot, toggleShot } = useObsToggles(courtId);
   if (!s) return <ObsShell><div /></ObsShell>;
 
-  // Use the team's abbreviation on the broadcast display when set, else the full name.
+  // Name shown on the broadcast display: a manually entered abbreviation (home_abbr/away_abbr, set
+  // from the team editor) always wins — the operator explicitly chose it. Otherwise a bound roster
+  // team's own abbreviation, else the full name. Same precedence the control panel uses, so an
+  // operator's edit never "sticks" on one screen but not the other.
   const tm = new Map(teams.map((t) => [t.id, t]));
-  const hName = (s.home_team_id && tm.get(s.home_team_id)?.abbreviation) || s.home_name;
-  const aName = (s.away_team_id && tm.get(s.away_team_id)?.abbreviation) || s.away_name;
+  const hName = s.home_abbr || (s.home_team_id && tm.get(s.home_team_id)?.abbreviation) || s.home_name;
+  const aName = s.away_abbr || (s.away_team_id && tm.get(s.away_team_id)?.abbreviation) || s.away_name;
 
   const inner =
     s.display_style_1 === "arena" ? <ArenaBoardStyle s={s} hName={hName} aName={aName} hideShot={hideShot} />
@@ -491,13 +497,31 @@ function Std3ScoreCorner({ name, color, logo, score, fouls, toRemain, oppFouls, 
         <p className="min-w-0 flex-1 truncate text-7xl font-black uppercase tracking-wide" style={{ color, textAlign: right ? "right" : "left" }}>{name}</p>
         {inBonus && <span className="shrink-0 rounded bg-white px-3 py-1 text-2xl font-black uppercase leading-none" style={{ color }}>Bonus</span>}
       </div>
-      <div className="grid w-full place-items-center rounded-[2rem] border-4 border-white/15 bg-black" style={{ height: 460 }}>
-        <span className="clock-digits font-black leading-none text-white" style={{ fontSize: "21rem" }}>{score}</span>
+      <div className="grid w-full place-items-center rounded-[2rem] border-4 border-white/15 bg-black" style={{ height: 420 }}>
+        <span className="clock-digits font-black leading-none text-white" style={{ fontSize: "19rem" }}>{score}</span>
       </div>
       <div className={`flex gap-6 ${right ? "flex-row-reverse" : ""}`}>
         <Std3StatTile label="T.O.L" value={toRemain} />
         <Std3StatTile label="Fouls" value={fouls} alert={fouls >= 5} />
       </div>
+    </div>
+  );
+}
+// Tournament logo + name strip — only shown once a tournament name has actually been set
+// (avoids a stray default logo/blank name on ad-hoc courts with no tournament configured).
+function Std3TournamentBanner({ courtId, name }: { courtId: string; name: string }) {
+  if (!name) return null;
+  const logo = SB_URL ? `${SB_URL}/storage/v1/object/public/player-photos/event-logo/${courtId}.png` : bdseaEventLogo;
+  return (
+    <div className="mb-2 flex items-center justify-center gap-2.5">
+      <img
+        src={logo}
+        alt=""
+        onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = bdseaEventLogo; }}
+        className="h-9 w-9 rounded-full object-contain"
+        style={{ background: "#05528c" }}
+      />
+      <span className="text-xl font-black uppercase tracking-[0.2em] text-white/80">{name}</span>
     </div>
   );
 }
@@ -513,6 +537,8 @@ function Standard3DisplayStyle({ s, hName, aName, hideShot }: { s: GameState; hN
 
   return (
     <div className="relative flex h-full w-full flex-col bg-[#16181d] p-8 text-white">
+      <Std3TournamentBanner courtId={s.court_id} name={s.tournament_name} />
+
       {/* Top: big team scores with ONLY the shot clock (+ possession direction) between them */}
       <div className="flex flex-1 items-center justify-between gap-4">
         <Std3ScoreCorner name={hName} color={s.home_color} logo={s.home_logo} score={s.home_score} fouls={s.home_fouls} toRemain={tol(s, "home")} oppFouls={s.away_fouls} />
