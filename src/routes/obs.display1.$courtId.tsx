@@ -478,13 +478,13 @@ function Std3StatTile({ label, value, alert }: { label: string; value: number; a
 function Std3ScoreCorner({ name, color, score, fouls, toRemain, oppFouls, right }: { name: string; color: string; score: number; fouls: number; toRemain: number; oppFouls: number; right?: boolean }) {
   const inBonus = oppFouls >= 5; // opponent reached 5 team fouls → this team shoots bonus
   return (
-    <div className={`flex w-[41%] flex-col gap-5 ${right ? "items-end" : "items-start"}`}>
+    <div className={`flex w-[41%] flex-col gap-4 ${right ? "items-end" : "items-start"}`}>
       <div className={`flex w-full items-center gap-3 ${right ? "flex-row-reverse" : ""}`}>
         <p className="min-w-0 flex-1 truncate text-7xl font-black uppercase tracking-wide" style={{ color, textAlign: right ? "right" : "left" }}>{name}</p>
         {inBonus && <span className="shrink-0 rounded bg-white px-3 py-1 text-2xl font-black uppercase leading-none" style={{ color }}>Bonus</span>}
       </div>
-      <div className="grid w-full place-items-center rounded-[2rem] border-4 border-white/15 bg-black" style={{ height: 560 }}>
-        <span className="clock-digits font-black leading-none text-white" style={{ fontSize: "26rem" }}>{score}</span>
+      <div className="grid w-full place-items-center rounded-[2rem] border-4 border-white/15 bg-black" style={{ height: 460 }}>
+        <span className="clock-digits font-black leading-none text-white" style={{ fontSize: "21rem" }}>{score}</span>
       </div>
       <div className={`flex gap-6 ${right ? "flex-row-reverse" : ""}`}>
         <Std3StatTile label="T.O.L" value={toRemain} />
@@ -509,18 +509,18 @@ function Standard3DisplayStyle({ s, hName, aName, hideShot }: { s: GameState; hN
       <div className="flex flex-1 items-center justify-between gap-4">
         <Std3ScoreCorner name={hName} color={s.home_color} score={s.home_score} fouls={s.home_fouls} toRemain={tol(s, "home")} oppFouls={s.away_fouls} />
 
-        <div className="flex flex-col items-center gap-5" style={{ width: 380 }}>
+        <div className="flex flex-col items-center gap-4" style={{ width: 380 }}>
           {/* Possession direction — the lit arrow points to the team with the ball */}
           <div className="flex items-center gap-5">
-            <span className="font-black leading-none" style={{ fontSize: "5.5rem", color: poss === "home" ? s.home_color : dim, textShadow: poss === "home" ? `0 0 26px ${s.home_color}` : "none" }}>◄</span>
-            <span className="text-xl font-black uppercase tracking-[0.3em] text-white/45">Poss</span>
-            <span className="font-black leading-none" style={{ fontSize: "5.5rem", color: poss === "away" ? s.away_color : dim, textShadow: poss === "away" ? `0 0 26px ${s.away_color}` : "none" }}>►</span>
+            <span className="font-black leading-none" style={{ fontSize: "4.5rem", color: poss === "home" ? s.home_color : dim, textShadow: poss === "home" ? `0 0 26px ${s.home_color}` : "none" }}>◄</span>
+            <span className="text-lg font-black uppercase tracking-[0.3em] text-white/45">Poss</span>
+            <span className="font-black leading-none" style={{ fontSize: "4.5rem", color: poss === "away" ? s.away_color : dim, textShadow: poss === "away" ? `0 0 26px ${s.away_color}` : "none" }}>►</span>
           </div>
           {!hideShot && (
             <div className="text-center">
               <div className="mb-1 text-2xl font-black uppercase tracking-[0.2em]" style={{ color: "var(--amber-clock)" }}>Shotclock</div>
-              <div className="rounded-[2rem] border-4 border-white/15 bg-black px-10 py-4">
-                <span className="clock-digits font-black leading-none" style={{ fontSize: "12rem", color: "var(--red-shot)", textShadow: "0 0 44px rgba(255,60,60,0.55)" }}>
+              <div className="rounded-[2rem] border-4 border-white/15 bg-black px-10 py-3">
+                <span className="clock-digits font-black leading-none" style={{ fontSize: "10rem", color: "var(--red-shot)", textShadow: "0 0 44px rgba(255,60,60,0.55)" }}>
                   {sp.whole}{sp.sub10 && <span style={{ color: "var(--amber-clock)", fontSize: "0.5em" }}>.{sp.tenth}</span>}
                 </span>
               </div>
@@ -531,14 +531,14 @@ function Standard3DisplayStyle({ s, hName, aName, hideShot }: { s: GameState; hN
         <Std3ScoreCorner name={aName} color={s.away_color} score={s.away_score} fouls={s.away_fouls} toRemain={tol(s, "away")} oppFouls={s.home_fouls} right />
       </div>
 
-      {/* Bottom: game clock + quarter, brought down and enlarged */}
-      <div className="flex items-end justify-center gap-12 pb-1">
+      {/* Bottom: game clock + quarter, enlarged but lifted clear of the bottom edge */}
+      <div className="flex items-end justify-center gap-12 pb-6">
         <div className="text-center">
           <div className="mb-1 flex justify-around px-6 text-xl font-black uppercase tracking-wider text-white/70">
             <span>Minutes</span><span>Seconds</span><span style={{ color: "var(--amber-clock)" }}>MS</span>
           </div>
-          <div className="rounded-[2rem] border-4 border-white/15 bg-black px-10 py-3">
-            <span className="clock-digits font-black leading-none" style={{ fontSize: "10rem" }}>
+          <div className="rounded-[2rem] border-4 border-white/15 bg-black px-10 py-2">
+            <span className="clock-digits font-black leading-none" style={{ fontSize: "8.5rem" }}>
               {pad2(mins)}<span className="text-white/80">:</span>{pad2(secs)}<span style={{ color: "var(--amber-clock)", fontSize: "0.5em" }}>.{tenths}</span>
             </span>
           </div>
@@ -546,7 +546,7 @@ function Standard3DisplayStyle({ s, hName, aName, hideShot }: { s: GameState; hN
         <div className="flex items-center gap-4">
           <span className="text-3xl font-black uppercase tracking-[0.2em] text-white/80">Quarter</span>
           <div className="grid place-items-center rounded-[2rem] border-4 border-white/20 bg-black px-10 py-2">
-            <span className="clock-digits font-black" style={{ fontSize: "8rem", color: "var(--red-shot)" }}>{periodBig(s.quarter)}</span>
+            <span className="clock-digits font-black" style={{ fontSize: "6.8rem", color: "var(--red-shot)" }}>{periodBig(s.quarter)}</span>
           </div>
         </div>
       </div>
