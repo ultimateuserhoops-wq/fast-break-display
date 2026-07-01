@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Pause, Lock, Unlock, Eye, EyeOff } from "lucide-react";
+import { Play, Pause, Lock, Unlock, Eye, EyeOff, Pencil, Image as ImageIcon } from "lucide-react";
 import {
   type GameState,
   useSmoothGameClock, useSmoothShotTenths, serverNow,
@@ -7,8 +7,10 @@ import {
   adjustGameClock, adjustShotClock, resetShotClock,
   startBothClocks, pauseBothClocks, startGameClock, pauseGameClock,
   setQuarter, advanceQuarter, resetClocksForQuarter, buzzer,
+  patchGameState,
 } from "@/lib/game-state";
 import { setBreak } from "@/lib/ads";
+import { supabase } from "@/integrations/supabase/client";
 import { ClockBuzzer } from "@/components/Buzzer";
 import { PossessionButtons } from "@/components/Possession";
 import { useShotClockVisible } from "@/lib/obs-toggles";
@@ -32,6 +34,16 @@ const periodBig = (q: number) => (q <= 4 ? (["1ST", "2ND", "3RD", "4TH"][q - 1] 
 const toRemain = (s: GameState, side: "home" | "away") =>
   Math.max(0, timeoutMaxForQuarter(s.quarter) - (side === "home" ? s.home_timeouts : s.away_timeouts));
 const nowIso = () => new Date(serverNow()).toISOString();
+
+// Team logo upload — a unique filename per upload so the browser never serves a stale cached
+// image for the same team (a plain overwrite-in-place path would need a cache-busting query).
+async function uploadTeamLogo(courtId: string, side: "home" | "away", file: File): Promise<string> {
+  const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+  const path = `team-logos/${courtId}-${side}-${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from("team-photos").upload(path, file, { upsert: true, contentType: file.type || "image/png" });
+  if (error) throw error;
+  return supabase.storage.from("team-photos").getPublicUrl(path).data.publicUrl;
+}
 
 /* ---- Isolated clock digits: ONLY these re-render on the rAF tick ---- */
 function GameDigits({ s }: { s: GameState }) {
@@ -80,15 +92,88 @@ function Chip({ children, onClick, disabled, tone = "dark" }: { children: React.
   );
 }
 
+// Small logo badge — white circle with the team's crest, falling back to colour-tinted initials
+// when no logo is set (same treatment as every other display style's team badge).
+function TeamBadge({ name, color, logo }: { name: string; color: string; logo: string | null }) {
+  return (
+    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-full bg-white" style={{ border: `3px solid ${color}` }}>
+      {logo ? <img src={logo} alt="" className="h-11 w-11 rounded-full object-contain" /> : <span className="text-sm font-black" style={{ color }}>{name.slice(0, 3).toUpperCase()}</span>}
+    </div>
+  );
+}
+
+// Inline editor: team name + logo (upload or paste a URL). Saves straight to game_state, so the
+// scoreboard here AND the OBS display (which reads the same home_name/home_logo fields) update.
+function TeamEditPanel({ s, side, onClose }: { s: GameState; side: "home" | "away"; onClose: () => void }) {
+  const isHome = side === "home";
+  const [name, setName] = useState(isHome ? s.home_name : s.away_name);
+  const [logoUrl, setLogoUrl] = useState((isHome ? s.home_logo : s.away_logo) ?? "");
+  const [busy, setBusy] = useState(false);
+
+  async function handleFile(file: File) {
+    setBusy(true);
+    try {
+      const url = await uploadTeamLogo(s.court_id, side, file);
+      setLogoUrl(url);
+    } catch { /* upload failed — keep whatever was in the field */ }
+    setBusy(false);
+  }
+  async function save() {
+    const patch = isHome
+      ? { home_name: name.trim() || s.home_name, home_logo: logoUrl.trim() || null }
+      : { away_name: name.trim() || s.away_name, away_logo: logoUrl.trim() || null };
+    await patchGameState(s.court_id, patch);
+    onClose();
+  }
+
+  return (
+    <div className="absolute left-1/2 top-full z-20 mt-2 w-72 -translate-x-1/2 rounded-xl border border-white/15 bg-[#1c1e24] p-4 text-left shadow-2xl">
+      <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-white/50">Team name &amp; logo</p>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Team name"
+        className="w-full rounded-md border border-white/15 bg-black px-2.5 py-1.5 text-sm font-semibold text-white outline-none focus:border-white/40"
+      />
+      <div className="mt-3 flex items-center gap-2">
+        <TeamBadge name={name || "?"} color={isHome ? s.home_color : s.away_color} logo={logoUrl || null} />
+        <div className="flex-1">
+          <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-md border border-white/20 px-2 py-1.5 text-[11px] font-bold text-white/80 hover:bg-white/10">
+            <ImageIcon className="h-3.5 w-3.5" /> {busy ? "Uploading…" : "Upload logo"}
+            <input type="file" accept="image/*" className="hidden" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); e.currentTarget.value = ""; }} />
+          </label>
+        </div>
+      </div>
+      <input
+        value={logoUrl}
+        onChange={(e) => setLogoUrl(e.target.value)}
+        placeholder="or paste an image URL"
+        className="mt-2 w-full rounded-md border border-white/15 bg-black px-2.5 py-1.5 text-xs text-white/80 outline-none focus:border-white/40"
+      />
+      <div className="mt-3 flex justify-end gap-2">
+        <button onClick={onClose} className="rounded-md border border-white/15 px-3 py-1.5 text-xs font-bold text-white/70 hover:bg-white/10">Cancel</button>
+        <button onClick={save} disabled={busy} className="rounded-md bg-white px-3 py-1.5 text-xs font-black text-black disabled:opacity-40">Save</button>
+      </div>
+    </div>
+  );
+}
+
 /* ---- Stable team blocks (never remount on a tick) ---- */
 function ScoreBlock({ s, side }: { s: GameState; side: "home" | "away" }) {
   const isHome = side === "home";
   const name = isHome ? s.home_name : s.away_name;
   const color = isHome ? s.home_color : s.away_color;
   const score = isHome ? s.home_score : s.away_score;
+  const logo = (isHome ? s.home_logo : s.away_logo) ?? null;
+  const [editing, setEditing] = useState(false);
   return (
-    <div className="flex flex-col items-center gap-2">
-      <p className="max-w-[15rem] truncate text-3xl font-black uppercase tracking-wide" style={{ color }}>{name}</p>
+    <div className="relative flex flex-col items-center gap-2">
+      <button onClick={() => setEditing((v) => !v)} className="flex max-w-[15rem] items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-white/10" title="Edit team name / logo">
+        <TeamBadge name={name} color={color} logo={logo} />
+        <span className="truncate text-3xl font-black uppercase tracking-wide" style={{ color }}>{name}</span>
+        <Pencil className="h-3.5 w-3.5 shrink-0 text-white/35" />
+      </button>
+      {editing && <TeamEditPanel s={s} side={side} onClose={() => setEditing(false)} />}
       <div className="grid w-[15rem] place-items-center rounded-2xl border-4 border-white/80 bg-black py-2">
         <span className="clock-digits text-[6rem] font-black leading-none text-white">{score}</span>
       </div>

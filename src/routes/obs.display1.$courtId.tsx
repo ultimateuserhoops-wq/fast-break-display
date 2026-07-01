@@ -475,11 +475,19 @@ function Std3StatTile({ label, value, alert }: { label: string; value: number; a
     </div>
   );
 }
-function Std3ScoreCorner({ name, color, score, fouls, toRemain, oppFouls, right }: { name: string; color: string; score: number; fouls: number; toRemain: number; oppFouls: number; right?: boolean }) {
+function Std3Badge({ name, color, logo }: { name: string; color: string; logo: string | null }) {
+  return (
+    <div className="grid h-20 w-20 shrink-0 place-items-center rounded-full bg-white" style={{ border: `4px solid ${color}` }}>
+      {logo ? <img src={logo} alt="" className="h-16 w-16 rounded-full object-contain" /> : <span className="text-2xl font-black" style={{ color }}>{name.slice(0, 3).toUpperCase()}</span>}
+    </div>
+  );
+}
+function Std3ScoreCorner({ name, color, logo, score, fouls, toRemain, oppFouls, right }: { name: string; color: string; logo: string | null; score: number; fouls: number; toRemain: number; oppFouls: number; right?: boolean }) {
   const inBonus = oppFouls >= 5; // opponent reached 5 team fouls → this team shoots bonus
   return (
     <div className={`flex w-[41%] flex-col gap-4 ${right ? "items-end" : "items-start"}`}>
       <div className={`flex w-full items-center gap-3 ${right ? "flex-row-reverse" : ""}`}>
+        <Std3Badge name={name} color={color} logo={logo} />
         <p className="min-w-0 flex-1 truncate text-7xl font-black uppercase tracking-wide" style={{ color, textAlign: right ? "right" : "left" }}>{name}</p>
         {inBonus && <span className="shrink-0 rounded bg-white px-3 py-1 text-2xl font-black uppercase leading-none" style={{ color }}>Bonus</span>}
       </div>
@@ -507,7 +515,7 @@ function Standard3DisplayStyle({ s, hName, aName, hideShot }: { s: GameState; hN
     <div className="relative flex h-full w-full flex-col bg-[#16181d] p-8 text-white">
       {/* Top: big team scores with ONLY the shot clock (+ possession direction) between them */}
       <div className="flex flex-1 items-center justify-between gap-4">
-        <Std3ScoreCorner name={hName} color={s.home_color} score={s.home_score} fouls={s.home_fouls} toRemain={tol(s, "home")} oppFouls={s.away_fouls} />
+        <Std3ScoreCorner name={hName} color={s.home_color} logo={s.home_logo} score={s.home_score} fouls={s.home_fouls} toRemain={tol(s, "home")} oppFouls={s.away_fouls} />
 
         <div className="flex flex-col items-center gap-4" style={{ width: 380 }}>
           {/* Possession direction — the lit arrow points to the team with the ball */}
@@ -528,7 +536,7 @@ function Standard3DisplayStyle({ s, hName, aName, hideShot }: { s: GameState; hN
           )}
         </div>
 
-        <Std3ScoreCorner name={aName} color={s.away_color} score={s.away_score} fouls={s.away_fouls} toRemain={tol(s, "away")} oppFouls={s.home_fouls} right />
+        <Std3ScoreCorner name={aName} color={s.away_color} logo={s.away_logo} score={s.away_score} fouls={s.away_fouls} toRemain={tol(s, "away")} oppFouls={s.home_fouls} right />
       </div>
 
       {/* Bottom: game clock + quarter, enlarged but lifted clear of the bottom edge */}
