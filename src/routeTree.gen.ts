@@ -12,17 +12,31 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiTimeRouteImport } from './routes/api/time'
 import { Route as AuthenticatedTournamentsRouteImport } from './routes/_authenticated/tournaments'
 import { Route as AuthenticatedTeamsRouteImport } from './routes/_authenticated/teams'
+import { Route as AuthenticatedStatsRouteImport } from './routes/_authenticated/stats'
 import { Route as AuthenticatedScoreboardRouteImport } from './routes/_authenticated/scoreboard'
+import { Route as AuthenticatedGamesRouteImport } from './routes/_authenticated/games'
+import { Route as AuthenticatedAdvertisingRouteImport } from './routes/_authenticated/advertising'
+import { Route as AuthenticatedTeamsIndexRouteImport } from './routes/_authenticated/teams.index'
 import { Route as AuthenticatedScoreboardIndexRouteImport } from './routes/_authenticated/scoreboard.index'
+import { Route as AuthenticatedGamesIndexRouteImport } from './routes/_authenticated/games.index'
 import { Route as ObsTimerCourtIdRouteImport } from './routes/obs.timer.$courtId'
 import { Route as ObsDisplay2CourtIdRouteImport } from './routes/obs.display2.$courtId'
 import { Route as ObsDisplay1CourtIdRouteImport } from './routes/obs.display1.$courtId'
 import { Route as ApiPublicSeedOperatorRouteImport } from './routes/api/public/seed-operator'
 import { Route as AuthenticatedTimekeeperCourtIdRouteImport } from './routes/_authenticated/timekeeper.$courtId'
+import { Route as AuthenticatedTeamsTeamIdRouteImport } from './routes/_authenticated/teams.$teamId'
+import { Route as AuthenticatedStatkeeperCourtIdRouteImport } from './routes/_authenticated/statkeeper.$courtId'
+import { Route as AuthenticatedSourcesCourtIdRouteImport } from './routes/_authenticated/sources.$courtId'
+import { Route as AuthenticatedShotclockCourtIdRouteImport } from './routes/_authenticated/shotclock.$courtId'
+import { Route as AuthenticatedShotchartCourtIdRouteImport } from './routes/_authenticated/shotchart.$courtId'
 import { Route as AuthenticatedScoreboardCourtIdRouteImport } from './routes/_authenticated/scoreboard.$courtId'
+import { Route as AuthenticatedReportCourtIdRouteImport } from './routes/_authenticated/report.$courtId'
+import { Route as AuthenticatedGamesGameIdRouteImport } from './routes/_authenticated/games.$gameId'
 import { Route as AuthenticatedGameLogCourtIdRouteImport } from './routes/_authenticated/game-log.$courtId'
+import { Route as AuthenticatedFootageCourtIdRouteImport } from './routes/_authenticated/footage.$courtId'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -38,6 +52,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTimeRoute = ApiTimeRouteImport.update({
+  id: '/api/time',
+  path: '/api/time',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedTournamentsRoute =
   AuthenticatedTournamentsRouteImport.update({
     id: '/tournaments',
@@ -49,10 +68,31 @@ const AuthenticatedTeamsRoute = AuthenticatedTeamsRouteImport.update({
   path: '/teams',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStatsRoute = AuthenticatedStatsRouteImport.update({
+  id: '/stats',
+  path: '/stats',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedScoreboardRoute = AuthenticatedScoreboardRouteImport.update({
   id: '/scoreboard',
   path: '/scoreboard',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGamesRoute = AuthenticatedGamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAdvertisingRoute =
+  AuthenticatedAdvertisingRouteImport.update({
+    id: '/advertising',
+    path: '/advertising',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedTeamsIndexRoute = AuthenticatedTeamsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedTeamsRoute,
 } as any)
 const AuthenticatedScoreboardIndexRoute =
   AuthenticatedScoreboardIndexRouteImport.update({
@@ -60,6 +100,11 @@ const AuthenticatedScoreboardIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedScoreboardRoute,
   } as any)
+const AuthenticatedGamesIndexRoute = AuthenticatedGamesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedGamesRoute,
+} as any)
 const ObsTimerCourtIdRoute = ObsTimerCourtIdRouteImport.update({
   id: '/obs/timer/$courtId',
   path: '/obs/timer/$courtId',
@@ -86,11 +131,53 @@ const AuthenticatedTimekeeperCourtIdRoute =
     path: '/timekeeper/$courtId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedTeamsTeamIdRoute =
+  AuthenticatedTeamsTeamIdRouteImport.update({
+    id: '/$teamId',
+    path: '/$teamId',
+    getParentRoute: () => AuthenticatedTeamsRoute,
+  } as any)
+const AuthenticatedStatkeeperCourtIdRoute =
+  AuthenticatedStatkeeperCourtIdRouteImport.update({
+    id: '/statkeeper/$courtId',
+    path: '/statkeeper/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedSourcesCourtIdRoute =
+  AuthenticatedSourcesCourtIdRouteImport.update({
+    id: '/sources/$courtId',
+    path: '/sources/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShotclockCourtIdRoute =
+  AuthenticatedShotclockCourtIdRouteImport.update({
+    id: '/shotclock/$courtId',
+    path: '/shotclock/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedShotchartCourtIdRoute =
+  AuthenticatedShotchartCourtIdRouteImport.update({
+    id: '/shotchart/$courtId',
+    path: '/shotchart/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedScoreboardCourtIdRoute =
   AuthenticatedScoreboardCourtIdRouteImport.update({
     id: '/$courtId',
     path: '/$courtId',
     getParentRoute: () => AuthenticatedScoreboardRoute,
+  } as any)
+const AuthenticatedReportCourtIdRoute =
+  AuthenticatedReportCourtIdRouteImport.update({
+    id: '/report/$courtId',
+    path: '/report/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedGamesGameIdRoute =
+  AuthenticatedGamesGameIdRouteImport.update({
+    id: '/$gameId',
+    path: '/$gameId',
+    getParentRoute: () => AuthenticatedGamesRoute,
   } as any)
 const AuthenticatedGameLogCourtIdRoute =
   AuthenticatedGameLogCourtIdRouteImport.update({
@@ -98,105 +185,192 @@ const AuthenticatedGameLogCourtIdRoute =
     path: '/game-log/$courtId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedFootageCourtIdRoute =
+  AuthenticatedFootageCourtIdRouteImport.update({
+    id: '/footage/$courtId',
+    path: '/footage/$courtId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/advertising': typeof AuthenticatedAdvertisingRoute
+  '/games': typeof AuthenticatedGamesRouteWithChildren
   '/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
-  '/teams': typeof AuthenticatedTeamsRoute
+  '/stats': typeof AuthenticatedStatsRoute
+  '/teams': typeof AuthenticatedTeamsRouteWithChildren
   '/tournaments': typeof AuthenticatedTournamentsRoute
+  '/api/time': typeof ApiTimeRoute
+  '/footage/$courtId': typeof AuthenticatedFootageCourtIdRoute
   '/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
+  '/games/$gameId': typeof AuthenticatedGamesGameIdRoute
+  '/report/$courtId': typeof AuthenticatedReportCourtIdRoute
   '/scoreboard/$courtId': typeof AuthenticatedScoreboardCourtIdRoute
+  '/shotchart/$courtId': typeof AuthenticatedShotchartCourtIdRoute
+  '/shotclock/$courtId': typeof AuthenticatedShotclockCourtIdRoute
+  '/sources/$courtId': typeof AuthenticatedSourcesCourtIdRoute
+  '/statkeeper/$courtId': typeof AuthenticatedStatkeeperCourtIdRoute
+  '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/timekeeper/$courtId': typeof AuthenticatedTimekeeperCourtIdRoute
   '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
   '/obs/display1/$courtId': typeof ObsDisplay1CourtIdRoute
   '/obs/display2/$courtId': typeof ObsDisplay2CourtIdRoute
   '/obs/timer/$courtId': typeof ObsTimerCourtIdRoute
+  '/games/': typeof AuthenticatedGamesIndexRoute
   '/scoreboard/': typeof AuthenticatedScoreboardIndexRoute
+  '/teams/': typeof AuthenticatedTeamsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/teams': typeof AuthenticatedTeamsRoute
+  '/advertising': typeof AuthenticatedAdvertisingRoute
+  '/stats': typeof AuthenticatedStatsRoute
   '/tournaments': typeof AuthenticatedTournamentsRoute
+  '/api/time': typeof ApiTimeRoute
+  '/footage/$courtId': typeof AuthenticatedFootageCourtIdRoute
   '/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
+  '/games/$gameId': typeof AuthenticatedGamesGameIdRoute
+  '/report/$courtId': typeof AuthenticatedReportCourtIdRoute
   '/scoreboard/$courtId': typeof AuthenticatedScoreboardCourtIdRoute
+  '/shotchart/$courtId': typeof AuthenticatedShotchartCourtIdRoute
+  '/shotclock/$courtId': typeof AuthenticatedShotclockCourtIdRoute
+  '/sources/$courtId': typeof AuthenticatedSourcesCourtIdRoute
+  '/statkeeper/$courtId': typeof AuthenticatedStatkeeperCourtIdRoute
+  '/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/timekeeper/$courtId': typeof AuthenticatedTimekeeperCourtIdRoute
   '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
   '/obs/display1/$courtId': typeof ObsDisplay1CourtIdRoute
   '/obs/display2/$courtId': typeof ObsDisplay2CourtIdRoute
   '/obs/timer/$courtId': typeof ObsTimerCourtIdRoute
+  '/games': typeof AuthenticatedGamesIndexRoute
   '/scoreboard': typeof AuthenticatedScoreboardIndexRoute
+  '/teams': typeof AuthenticatedTeamsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/advertising': typeof AuthenticatedAdvertisingRoute
+  '/_authenticated/games': typeof AuthenticatedGamesRouteWithChildren
   '/_authenticated/scoreboard': typeof AuthenticatedScoreboardRouteWithChildren
-  '/_authenticated/teams': typeof AuthenticatedTeamsRoute
+  '/_authenticated/stats': typeof AuthenticatedStatsRoute
+  '/_authenticated/teams': typeof AuthenticatedTeamsRouteWithChildren
   '/_authenticated/tournaments': typeof AuthenticatedTournamentsRoute
+  '/api/time': typeof ApiTimeRoute
+  '/_authenticated/footage/$courtId': typeof AuthenticatedFootageCourtIdRoute
   '/_authenticated/game-log/$courtId': typeof AuthenticatedGameLogCourtIdRoute
+  '/_authenticated/games/$gameId': typeof AuthenticatedGamesGameIdRoute
+  '/_authenticated/report/$courtId': typeof AuthenticatedReportCourtIdRoute
   '/_authenticated/scoreboard/$courtId': typeof AuthenticatedScoreboardCourtIdRoute
+  '/_authenticated/shotchart/$courtId': typeof AuthenticatedShotchartCourtIdRoute
+  '/_authenticated/shotclock/$courtId': typeof AuthenticatedShotclockCourtIdRoute
+  '/_authenticated/sources/$courtId': typeof AuthenticatedSourcesCourtIdRoute
+  '/_authenticated/statkeeper/$courtId': typeof AuthenticatedStatkeeperCourtIdRoute
+  '/_authenticated/teams/$teamId': typeof AuthenticatedTeamsTeamIdRoute
   '/_authenticated/timekeeper/$courtId': typeof AuthenticatedTimekeeperCourtIdRoute
   '/api/public/seed-operator': typeof ApiPublicSeedOperatorRoute
   '/obs/display1/$courtId': typeof ObsDisplay1CourtIdRoute
   '/obs/display2/$courtId': typeof ObsDisplay2CourtIdRoute
   '/obs/timer/$courtId': typeof ObsTimerCourtIdRoute
+  '/_authenticated/games/': typeof AuthenticatedGamesIndexRoute
   '/_authenticated/scoreboard/': typeof AuthenticatedScoreboardIndexRoute
+  '/_authenticated/teams/': typeof AuthenticatedTeamsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/advertising'
+    | '/games'
     | '/scoreboard'
+    | '/stats'
     | '/teams'
     | '/tournaments'
+    | '/api/time'
+    | '/footage/$courtId'
     | '/game-log/$courtId'
+    | '/games/$gameId'
+    | '/report/$courtId'
     | '/scoreboard/$courtId'
+    | '/shotchart/$courtId'
+    | '/shotclock/$courtId'
+    | '/sources/$courtId'
+    | '/statkeeper/$courtId'
+    | '/teams/$teamId'
     | '/timekeeper/$courtId'
     | '/api/public/seed-operator'
     | '/obs/display1/$courtId'
     | '/obs/display2/$courtId'
     | '/obs/timer/$courtId'
+    | '/games/'
     | '/scoreboard/'
+    | '/teams/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/teams'
+    | '/advertising'
+    | '/stats'
     | '/tournaments'
+    | '/api/time'
+    | '/footage/$courtId'
     | '/game-log/$courtId'
+    | '/games/$gameId'
+    | '/report/$courtId'
     | '/scoreboard/$courtId'
+    | '/shotchart/$courtId'
+    | '/shotclock/$courtId'
+    | '/sources/$courtId'
+    | '/statkeeper/$courtId'
+    | '/teams/$teamId'
     | '/timekeeper/$courtId'
     | '/api/public/seed-operator'
     | '/obs/display1/$courtId'
     | '/obs/display2/$courtId'
     | '/obs/timer/$courtId'
+    | '/games'
     | '/scoreboard'
+    | '/teams'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/advertising'
+    | '/_authenticated/games'
     | '/_authenticated/scoreboard'
+    | '/_authenticated/stats'
     | '/_authenticated/teams'
     | '/_authenticated/tournaments'
+    | '/api/time'
+    | '/_authenticated/footage/$courtId'
     | '/_authenticated/game-log/$courtId'
+    | '/_authenticated/games/$gameId'
+    | '/_authenticated/report/$courtId'
     | '/_authenticated/scoreboard/$courtId'
+    | '/_authenticated/shotchart/$courtId'
+    | '/_authenticated/shotclock/$courtId'
+    | '/_authenticated/sources/$courtId'
+    | '/_authenticated/statkeeper/$courtId'
+    | '/_authenticated/teams/$teamId'
     | '/_authenticated/timekeeper/$courtId'
     | '/api/public/seed-operator'
     | '/obs/display1/$courtId'
     | '/obs/display2/$courtId'
     | '/obs/timer/$courtId'
+    | '/_authenticated/games/'
     | '/_authenticated/scoreboard/'
+    | '/_authenticated/teams/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiTimeRoute: typeof ApiTimeRoute
   ApiPublicSeedOperatorRoute: typeof ApiPublicSeedOperatorRoute
   ObsDisplay1CourtIdRoute: typeof ObsDisplay1CourtIdRoute
   ObsDisplay2CourtIdRoute: typeof ObsDisplay2CourtIdRoute
@@ -226,6 +400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/time': {
+      id: '/api/time'
+      path: '/api/time'
+      fullPath: '/api/time'
+      preLoaderRoute: typeof ApiTimeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/tournaments': {
       id: '/_authenticated/tournaments'
       path: '/tournaments'
@@ -240,6 +421,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/stats': {
+      id: '/_authenticated/stats'
+      path: '/stats'
+      fullPath: '/stats'
+      preLoaderRoute: typeof AuthenticatedStatsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/scoreboard': {
       id: '/_authenticated/scoreboard'
       path: '/scoreboard'
@@ -247,12 +435,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedScoreboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/games': {
+      id: '/_authenticated/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof AuthenticatedGamesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/advertising': {
+      id: '/_authenticated/advertising'
+      path: '/advertising'
+      fullPath: '/advertising'
+      preLoaderRoute: typeof AuthenticatedAdvertisingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/teams/': {
+      id: '/_authenticated/teams/'
+      path: '/'
+      fullPath: '/teams/'
+      preLoaderRoute: typeof AuthenticatedTeamsIndexRouteImport
+      parentRoute: typeof AuthenticatedTeamsRoute
+    }
     '/_authenticated/scoreboard/': {
       id: '/_authenticated/scoreboard/'
       path: '/'
       fullPath: '/scoreboard/'
       preLoaderRoute: typeof AuthenticatedScoreboardIndexRouteImport
       parentRoute: typeof AuthenticatedScoreboardRoute
+    }
+    '/_authenticated/games/': {
+      id: '/_authenticated/games/'
+      path: '/'
+      fullPath: '/games/'
+      preLoaderRoute: typeof AuthenticatedGamesIndexRouteImport
+      parentRoute: typeof AuthenticatedGamesRoute
     }
     '/obs/timer/$courtId': {
       id: '/obs/timer/$courtId'
@@ -289,12 +505,61 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTimekeeperCourtIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/teams/$teamId': {
+      id: '/_authenticated/teams/$teamId'
+      path: '/$teamId'
+      fullPath: '/teams/$teamId'
+      preLoaderRoute: typeof AuthenticatedTeamsTeamIdRouteImport
+      parentRoute: typeof AuthenticatedTeamsRoute
+    }
+    '/_authenticated/statkeeper/$courtId': {
+      id: '/_authenticated/statkeeper/$courtId'
+      path: '/statkeeper/$courtId'
+      fullPath: '/statkeeper/$courtId'
+      preLoaderRoute: typeof AuthenticatedStatkeeperCourtIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/sources/$courtId': {
+      id: '/_authenticated/sources/$courtId'
+      path: '/sources/$courtId'
+      fullPath: '/sources/$courtId'
+      preLoaderRoute: typeof AuthenticatedSourcesCourtIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shotclock/$courtId': {
+      id: '/_authenticated/shotclock/$courtId'
+      path: '/shotclock/$courtId'
+      fullPath: '/shotclock/$courtId'
+      preLoaderRoute: typeof AuthenticatedShotclockCourtIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/shotchart/$courtId': {
+      id: '/_authenticated/shotchart/$courtId'
+      path: '/shotchart/$courtId'
+      fullPath: '/shotchart/$courtId'
+      preLoaderRoute: typeof AuthenticatedShotchartCourtIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/scoreboard/$courtId': {
       id: '/_authenticated/scoreboard/$courtId'
       path: '/$courtId'
       fullPath: '/scoreboard/$courtId'
       preLoaderRoute: typeof AuthenticatedScoreboardCourtIdRouteImport
       parentRoute: typeof AuthenticatedScoreboardRoute
+    }
+    '/_authenticated/report/$courtId': {
+      id: '/_authenticated/report/$courtId'
+      path: '/report/$courtId'
+      fullPath: '/report/$courtId'
+      preLoaderRoute: typeof AuthenticatedReportCourtIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/games/$gameId': {
+      id: '/_authenticated/games/$gameId'
+      path: '/$gameId'
+      fullPath: '/games/$gameId'
+      preLoaderRoute: typeof AuthenticatedGamesGameIdRouteImport
+      parentRoute: typeof AuthenticatedGamesRoute
     }
     '/_authenticated/game-log/$courtId': {
       id: '/_authenticated/game-log/$courtId'
@@ -303,8 +568,28 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGameLogCourtIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/footage/$courtId': {
+      id: '/_authenticated/footage/$courtId'
+      path: '/footage/$courtId'
+      fullPath: '/footage/$courtId'
+      preLoaderRoute: typeof AuthenticatedFootageCourtIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
+
+interface AuthenticatedGamesRouteChildren {
+  AuthenticatedGamesGameIdRoute: typeof AuthenticatedGamesGameIdRoute
+  AuthenticatedGamesIndexRoute: typeof AuthenticatedGamesIndexRoute
+}
+
+const AuthenticatedGamesRouteChildren: AuthenticatedGamesRouteChildren = {
+  AuthenticatedGamesGameIdRoute: AuthenticatedGamesGameIdRoute,
+  AuthenticatedGamesIndexRoute: AuthenticatedGamesIndexRoute,
+}
+
+const AuthenticatedGamesRouteWithChildren =
+  AuthenticatedGamesRoute._addFileChildren(AuthenticatedGamesRouteChildren)
 
 interface AuthenticatedScoreboardRouteChildren {
   AuthenticatedScoreboardCourtIdRoute: typeof AuthenticatedScoreboardCourtIdRoute
@@ -322,19 +607,50 @@ const AuthenticatedScoreboardRouteWithChildren =
     AuthenticatedScoreboardRouteChildren,
   )
 
+interface AuthenticatedTeamsRouteChildren {
+  AuthenticatedTeamsTeamIdRoute: typeof AuthenticatedTeamsTeamIdRoute
+  AuthenticatedTeamsIndexRoute: typeof AuthenticatedTeamsIndexRoute
+}
+
+const AuthenticatedTeamsRouteChildren: AuthenticatedTeamsRouteChildren = {
+  AuthenticatedTeamsTeamIdRoute: AuthenticatedTeamsTeamIdRoute,
+  AuthenticatedTeamsIndexRoute: AuthenticatedTeamsIndexRoute,
+}
+
+const AuthenticatedTeamsRouteWithChildren =
+  AuthenticatedTeamsRoute._addFileChildren(AuthenticatedTeamsRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdvertisingRoute: typeof AuthenticatedAdvertisingRoute
+  AuthenticatedGamesRoute: typeof AuthenticatedGamesRouteWithChildren
   AuthenticatedScoreboardRoute: typeof AuthenticatedScoreboardRouteWithChildren
-  AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRoute
+  AuthenticatedStatsRoute: typeof AuthenticatedStatsRoute
+  AuthenticatedTeamsRoute: typeof AuthenticatedTeamsRouteWithChildren
   AuthenticatedTournamentsRoute: typeof AuthenticatedTournamentsRoute
+  AuthenticatedFootageCourtIdRoute: typeof AuthenticatedFootageCourtIdRoute
   AuthenticatedGameLogCourtIdRoute: typeof AuthenticatedGameLogCourtIdRoute
+  AuthenticatedReportCourtIdRoute: typeof AuthenticatedReportCourtIdRoute
+  AuthenticatedShotchartCourtIdRoute: typeof AuthenticatedShotchartCourtIdRoute
+  AuthenticatedShotclockCourtIdRoute: typeof AuthenticatedShotclockCourtIdRoute
+  AuthenticatedSourcesCourtIdRoute: typeof AuthenticatedSourcesCourtIdRoute
+  AuthenticatedStatkeeperCourtIdRoute: typeof AuthenticatedStatkeeperCourtIdRoute
   AuthenticatedTimekeeperCourtIdRoute: typeof AuthenticatedTimekeeperCourtIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdvertisingRoute: AuthenticatedAdvertisingRoute,
+  AuthenticatedGamesRoute: AuthenticatedGamesRouteWithChildren,
   AuthenticatedScoreboardRoute: AuthenticatedScoreboardRouteWithChildren,
-  AuthenticatedTeamsRoute: AuthenticatedTeamsRoute,
+  AuthenticatedStatsRoute: AuthenticatedStatsRoute,
+  AuthenticatedTeamsRoute: AuthenticatedTeamsRouteWithChildren,
   AuthenticatedTournamentsRoute: AuthenticatedTournamentsRoute,
+  AuthenticatedFootageCourtIdRoute: AuthenticatedFootageCourtIdRoute,
   AuthenticatedGameLogCourtIdRoute: AuthenticatedGameLogCourtIdRoute,
+  AuthenticatedReportCourtIdRoute: AuthenticatedReportCourtIdRoute,
+  AuthenticatedShotchartCourtIdRoute: AuthenticatedShotchartCourtIdRoute,
+  AuthenticatedShotclockCourtIdRoute: AuthenticatedShotclockCourtIdRoute,
+  AuthenticatedSourcesCourtIdRoute: AuthenticatedSourcesCourtIdRoute,
+  AuthenticatedStatkeeperCourtIdRoute: AuthenticatedStatkeeperCourtIdRoute,
   AuthenticatedTimekeeperCourtIdRoute: AuthenticatedTimekeeperCourtIdRoute,
 }
 
@@ -345,6 +661,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiTimeRoute: ApiTimeRoute,
   ApiPublicSeedOperatorRoute: ApiPublicSeedOperatorRoute,
   ObsDisplay1CourtIdRoute: ObsDisplay1CourtIdRoute,
   ObsDisplay2CourtIdRoute: ObsDisplay2CourtIdRoute,
@@ -353,3 +670,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

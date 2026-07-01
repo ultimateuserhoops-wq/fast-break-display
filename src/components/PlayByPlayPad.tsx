@@ -1,5 +1,6 @@
 import type { GameState, Player } from "@/lib/game-state";
 import { scoreFromAction, logPlayerStat } from "@/lib/game-state";
+import { ink } from "@/lib/color";
 
 const MADE_ACTIONS: Array<{ key: "2PT_MADE" | "3PT_MADE" | "FT_MADE"; label: string; pts: number }> = [
   { key: "2PT_MADE", label: "+2 MADE", pts: 2 },
@@ -28,7 +29,7 @@ export function PlayByPlayPad({
   player: Player;
   onCleared: () => void;
 }) {
-  const color = side === "home" ? s.home_color : s.away_color;
+  const color = ink(side === "home" ? s.home_color : s.away_color);
   const meta = { id: player.id, name: player.name, jersey_number: player.jersey_number };
 
   return (

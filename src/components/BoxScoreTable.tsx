@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { GameState, GameEvent } from "@/lib/game-state";
-import { usePlayers, aggregateBoxScore } from "@/lib/game-state";
+import { usePlayers, aggregateBoxScore, isStaff } from "@/lib/game-state";
 
 export function BoxScoreTable({
   s, side, events,
@@ -19,7 +19,7 @@ export function BoxScoreTable({
 
   if (!teamId) return null;
 
-  const rows = players.map((p) => ({ p, line: box.get(p.id) }));
+  const rows = players.filter((p) => !isStaff(p)).map((p) => ({ p, line: box.get(p.id) }));
 
   return (
     <div className="overflow-hidden rounded-2xl border bg-card">

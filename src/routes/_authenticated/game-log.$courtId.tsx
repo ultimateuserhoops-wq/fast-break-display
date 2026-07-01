@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { TopNav } from "@/components/Nav";
 import { CourtSelector } from "@/components/CourtSelector";
 import { useGameState, useGameEvents, formatClock, type GameEvent } from "@/lib/game-state";
+import { ink } from "@/lib/color";
 
 export const Route = createFileRoute("/_authenticated/game-log/$courtId")({
   head: () => ({ meta: [{ title: "Game Log — BDC" }] }),
@@ -64,7 +65,7 @@ function GameLogPage() {
             )}
             {events.map((e) => {
               const b = eventBadge(e);
-              const sideColor = e.team_side === "home" ? s?.home_color : s?.away_color;
+              const sideColor = ink(e.team_side === "home" ? s?.home_color : s?.away_color);
               const sideName = e.team_side === "home" ? s?.home_name : s?.away_name;
               return (
                 <div key={e.id} className="grid grid-cols-[60px_70px_70px_1fr_120px] items-center border-b px-4 py-2 text-sm last:border-0">

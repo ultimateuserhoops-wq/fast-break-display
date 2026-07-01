@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 
 const SEED_EMAIL = "operator@bdcvietnam.app";
-const SEED_PASSWORD = "Admin123";
+const SEED_PASSWORD = "admin123";
 
 /**
  * Idempotently seeds the single shared operator account.

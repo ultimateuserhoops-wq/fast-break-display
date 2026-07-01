@@ -19,7 +19,7 @@ export function TopNav() {
             B
           </div>
           <div className="leading-tight">
-            <div className="text-sm font-bold tracking-tight">THE BASKETBALL SCOREBOARD SYSTEM</div>
+            <div className="text-sm font-bold tracking-tight">BDCSCOREBOARD</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
               A property of BDC VIETNAM
             </div>

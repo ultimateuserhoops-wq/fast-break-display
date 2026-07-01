@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ink } from "@/lib/color";
 
 export function ScoreBox({
   score,
@@ -25,19 +26,20 @@ export function ScoreBox({
 
   return (
     <div
-      className="relative grid aspect-square w-full max-w-[260px] place-items-center rounded-2xl border-2 bg-card"
+      className="relative grid aspect-square w-full max-w-[260px] place-items-center overflow-hidden rounded-2xl border-2 bg-card"
       style={{ borderColor: color }}
     >
       {showThree ? (
-        <div
+        // On a made 3 the score hides and a big "+3" flashes for ~1s in the team colour.
+        <span
           key={animKey}
-          className="three-burst grid h-32 w-32 place-items-center rounded-full text-5xl font-black text-white shadow-lg"
-          style={{ background: color }}
+          className="three-burst clock-digits text-center font-black leading-none tabular-nums"
+          style={{ color: ink(color), fontSize: "7rem" }}
         >
-          3+
-        </div>
+          +3
+        </span>
       ) : (
-        <span key={score} className="score-pop clock-digits text-[7rem] font-black leading-none">
+        <span key={score} className="score-pop clock-digits text-center font-black leading-none tabular-nums" style={{ fontSize: "7rem" }}>
           {score}
         </span>
       )}

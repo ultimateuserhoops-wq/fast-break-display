@@ -11,10 +11,12 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
+// Single shared operator account — everyone signs in with just the password.
+const SHARED_EMAIL = "operator@bdcvietnam.app";
+
 function AuthPage() {
   const navigate = useNavigate();
   const { isAuthed } = useAuthSession();
-  const [email, setEmail] = useState("operator@bdcvietnam.app");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -25,10 +27,13 @@ function AuthPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // The shared password is all-lowercase — forgive trailing spaces and a stray capital
+    // (phones/tablets auto-capitalize the first letter), which were causing false "wrong password".
+    const pw = password.trim().toLowerCase();
+    const { error } = await supabase.auth.signInWithPassword({ email: SHARED_EMAIL, password: pw });
     setBusy(false);
     if (error) {
-      toast.error(error.message);
+      toast.error("Wrong password — it's “admin123” (no spaces)");
       return;
     }
     toast.success("Signed in");
@@ -41,35 +46,31 @@ function AuthPage() {
         <Link to="/" className="mb-8 flex items-center gap-3">
           <div className="grid h-10 w-10 place-items-center rounded-xl bg-foreground text-background font-black">B</div>
           <div className="leading-tight">
-            <div className="text-sm font-bold">THE BASKETBALL SCOREBOARD SYSTEM</div>
+            <div className="text-sm font-bold">BDCSCOREBOARD</div>
             <div className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">A property of BDC VIETNAM</div>
           </div>
         </Link>
         <div className="rounded-2xl border bg-card p-8 shadow-sm">
           <h1 className="text-2xl font-bold">Operator login</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sign in to control scoreboards and clocks. Broadcast/OBS display pages remain public.
+            Enter the shared password to control scoreboards and clocks. Broadcast/OBS display pages remain public.
           </p>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
-            <div>
-              <label className="text-xs font-medium">Email</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
-                required
-              />
-            </div>
             <div>
               <label className="text-xs font-medium">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoFocus
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                autoComplete="off"
                 className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
                 required
               />
+              <p className="mt-1 text-[11px] text-muted-foreground">Shared password: <b>admin123</b></p>
             </div>
             <button
               type="submit"
