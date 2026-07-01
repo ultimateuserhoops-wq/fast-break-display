@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Play, Pause, Lock, Unlock } from "lucide-react";
+import { Play, Pause, Lock, Unlock, Eye, EyeOff } from "lucide-react";
 import {
   type GameState,
   useSmoothGameClock, useSmoothShotTenths, serverNow,
@@ -11,6 +11,7 @@ import {
 import { setBreak } from "@/lib/ads";
 import { ClockBuzzer } from "@/components/Buzzer";
 import { PossessionButtons } from "@/components/Possession";
+import { useShotClockVisible } from "@/lib/obs-toggles";
 
 /* SCOREBOARD "Standard 3" — styled after the Pydjian Scoreboard PRO console.
    Drives the same shared game state as every other control panel.
@@ -52,6 +53,18 @@ function ShotDigits({ s, dimmed }: { s: GameState; dimmed?: boolean }) {
       <span className="text-[5.5rem] text-red-500">{whole}</span>
       <span className="ml-1 w-[2rem] text-[3.2rem] text-amber-400">.{tenth}</span>
     </div>
+  );
+}
+
+// Remotely hide/show the 24s shot clock on the OBS/arena display — for when a separate device
+// is running the shot clock and it shouldn't be duplicated on the main screen.
+function ShotDisplayToggle({ hidden, onClick }: { hidden: boolean; onClick: () => void }) {
+  return (
+    <button onClick={onClick} title={hidden ? "Shot clock is hidden on the arena display — click to show it again" : "Hide the 24s shot clock on the arena display (e.g. a separate device is running it)"}
+      className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide transition ${hidden ? "border-amber-500 bg-amber-500/20 text-amber-300" : "border-white/20 text-white/70 hover:bg-white/10"}`}>
+      {hidden ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+      {hidden ? "Display: shot clock off" : "Hide on display"}
+    </button>
   );
 }
 
@@ -148,6 +161,7 @@ export function Standard3Control({ s }: { s: GameState }) {
   const [shotLocked, setShotLocked] = useState(() => typeof window !== "undefined" && localStorage.getItem(shotKey) === "1");
   const toggleShotLock = () => setShotLocked((v) => { const n = !v; try { localStorage.setItem(shotKey, n ? "1" : "0"); } catch { /* ignore */ } return n; });
   const shotOff = locked || shotLocked;
+  const { hideShot: shotHiddenOnDisplay, toggleShot: toggleShotOnDisplay } = useShotClockVisible(s.court_id);
 
   const running = shotLocked ? s.game_clock_running : (s.game_clock_running || s.shot_clock_running);
   const toggleRun = () => {
@@ -189,6 +203,7 @@ export function Standard3Control({ s }: { s: GameState }) {
             <Chip disabled={shotOff} onClick={() => resetShotClock(s, 240)}>24</Chip>
             <Chip disabled={shotOff} onClick={() => resetShotClock(s, 140)}>14</Chip>
           </div>
+          <div className="mt-2"><ShotDisplayToggle hidden={shotHiddenOnDisplay} onClick={toggleShotOnDisplay} /></div>
           <PossessionButtons s={s} className="mt-2 justify-center" />
         </div>
       </div>
