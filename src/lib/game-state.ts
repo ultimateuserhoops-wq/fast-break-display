@@ -6,6 +6,7 @@ import {
 } from "@/lib/gateway";
 import { busSendPatch, onBusPatch } from "@/lib/realtime-bus";
 import { localSendPatch, onLocalPatch, isLocalDisplay } from "@/lib/local-bus";
+import { recordAudit } from "@/lib/audit";
 import type { Tables } from "@/integrations/supabase/types";
 
 export type Court = Tables<"courts">;
@@ -314,6 +315,7 @@ export async function patchGameState(courtId: string, patch: Partial<GameState>)
   gatewaySendPatch(courtId, patch);  // instant LAN relay to every screen (no-op when off-gateway)
   busSendPatch(courtId, patch);      // fast CLOUD relay (~75ms) so cloud displays don't wait on postgres_changes (~0.8s)
   localSendPatch(courtId, patch);    // INSTANT same-device relay (BroadcastChannel) → extended display updates with 0 lag
+  recordAudit(courtId, patch);       // stamp the change with this device's operator name (shared login has no identity)
   // Persist to Supabase regardless (the control panel is authenticated): keeps history,
   // cloud displays, and restart-recovery working. Off the critical path — every screen
   // already updated via the gateway, and gateway-connected clients ignore the slow echo.

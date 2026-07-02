@@ -18,6 +18,7 @@ function AuthPage() {
   const navigate = useNavigate();
   const { isAuthed } = useAuthSession();
   const [password, setPassword] = useState("");
+  const [operator, setOperator] = useState(() => (typeof window === "undefined" ? "" : localStorage.getItem("bdc_operator_name") || ""));
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -33,10 +34,13 @@ function AuthPage() {
     const { error } = await supabase.auth.signInWithPassword({ email: SHARED_EMAIL, password: pw });
     setBusy(false);
     if (error) {
-      toast.error("Wrong password — it's “admin123” (no spaces)");
+      toast.error("Incorrect password.");
       return;
     }
-    toast.success("Signed in");
+    // Everyone shares one account, so the per-device operator name is what makes
+    // score/clock changes traceable in the audit trail.
+    try { localStorage.setItem("bdc_operator_name", operator.trim()); } catch { /* ignore */ }
+    toast.success(`Signed in as ${operator.trim()}`);
     navigate({ to: "/", replace: true });
   }
 
@@ -57,12 +61,23 @@ function AuthPage() {
           </p>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
+              <label className="text-xs font-medium">Your name</label>
+              <input
+                value={operator}
+                onChange={(e) => setOperator(e.target.value)}
+                autoFocus
+                placeholder="e.g. Minh — shown in the change log"
+                className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
+                required
+              />
+              <p className="mt-1 text-[11px] text-muted-foreground">Everyone shares one account — your name is what identifies this device's changes.</p>
+            </div>
+            <div>
               <label className="text-xs font-medium">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoFocus
                 autoCapitalize="none"
                 autoCorrect="off"
                 spellCheck={false}
@@ -70,7 +85,6 @@ function AuthPage() {
                 className="mt-1 w-full rounded-md border bg-background px-3 py-2 text-sm"
                 required
               />
-              <p className="mt-1 text-[11px] text-muted-foreground">Shared password: <b>admin123</b></p>
             </div>
             <button
               type="submit"

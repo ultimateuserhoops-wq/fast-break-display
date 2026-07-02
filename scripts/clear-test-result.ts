@@ -5,7 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
 const anon = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 const email = process.env.SCOREBOARD_OPERATOR_EMAIL || "operator@bdcvietnam.app";
-const pass = process.env.SCOREBOARD_OPERATOR_PASSWORD || "admin123";
+const pass = process.env.SCOREBOARD_OPERATOR_PASSWORD || ""; // no hard-coded fallback — repo is public
 const NAME = "BDSEA 2026";
 
 const sb = createClient(url, anon);

@@ -20,7 +20,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
 const SUPABASE_KEY = process.env.SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_PUBLISHABLE_KEY || "";
 const OP_EMAIL = process.env.GATEWAY_OPERATOR_EMAIL || "operator@bdcvietnam.app";
-const OP_PASSWORD = process.env.GATEWAY_OPERATOR_PASSWORD || "Admin123";
+const OP_PASSWORD = process.env.GATEWAY_OPERATOR_PASSWORD || process.env.SCOREBOARD_OPERATOR_PASSWORD || ""; // no hard-coded fallback — repo is public
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const TG_TOKEN = process.env.HERMES_TELEGRAM_TOKEN || "";
 const TG_CHAT = process.env.HERMES_ADMIN_CHAT_ID || "";

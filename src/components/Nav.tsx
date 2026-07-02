@@ -1,10 +1,18 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthSession } from "@/lib/auth";
+import { getOperatorName, setOperatorName } from "@/lib/audit";
 
 export function TopNav() {
   const navigate = useNavigate();
-  const { isAuthed, email } = useAuthSession();
+  const { isAuthed } = useAuthSession();
+  const [operator, setOperator] = useState(getOperatorName);
+
+  function renameOperator() {
+    const next = prompt("Operator name for this device (shown in the change log):", operator);
+    if (next && next.trim()) { setOperatorName(next); setOperator(next.trim()); }
+  }
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -34,7 +42,13 @@ export function TopNav() {
         <div className="flex items-center gap-3 text-xs">
           {isAuthed ? (
             <>
-              <span className="hidden text-muted-foreground sm:inline">{email}</span>
+              <button
+                onClick={renameOperator}
+                title="Operator name for this device — click to change. Every score/clock change is logged under this name."
+                className="hidden rounded-md border px-2.5 py-1.5 font-medium text-muted-foreground hover:bg-secondary sm:inline"
+              >
+                {operator || "Set operator name"}
+              </button>
               <button
                 onClick={handleSignOut}
                 className="rounded-md border px-3 py-1.5 font-medium hover:bg-secondary"
