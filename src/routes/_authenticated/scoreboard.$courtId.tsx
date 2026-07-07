@@ -165,17 +165,39 @@ function CourtControl() {
 const timerLocked = (courtId: string) => typeof window !== "undefined" && localStorage.getItem(`bdc_timerlock_${courtId}`) === "1";
 
 /* ---------- Operator hotkeys (rebindable, saved per device) ---------- */
-type HotAction = "shotToggle" | "reset24" | "reset14" | "shotPlus" | "shotMinus" | "buzzer" | "sync" | "unsync" | "prevQ" | "nextQ";
+type HotAction =
+  | "shotToggle" | "reset24" | "reset14" | "shotPlus" | "shotMinus" | "buzzer" | "sync" | "unsync" | "prevQ" | "nextQ"
+  | "homePlus1" | "homePlus2" | "homePlus3" | "homeMinus1" | "homeFoul"
+  | "awayPlus1" | "awayPlus2" | "awayPlus3" | "awayMinus1" | "awayFoul"
+  | "undo";
+// Defaults match the scorer's-table MACROPAD (one-handed keypad, knob on the left):
+//   W/E/R = home +1/+2/+3 · A/S/D = away +1/+2/+3 · Z/C = home/away foul · X = undo
+//   TAB = home −1 · . = away −1 · T = shot 24 · DEL = shot 14 · SPACE = clocks · ENTER = buzzer
+// ESC and the modifier keys stay unbound on purpose: ESC so an accidental press does nothing,
+// modifiers because a lone Control/Alt binding would also fire on every Ctrl+Z / Ctrl+R combo.
 const HOTKEY_DEFAULTS: Record<HotAction, string> = {
-  shotToggle: " ", reset24: "r", reset14: "f", shotPlus: "ArrowUp", shotMinus: "ArrowDown",
-  buzzer: "b", sync: "s", unsync: "u", prevQ: "[", nextQ: "]",
+  shotToggle: " ", reset24: "t", reset14: "Delete", shotPlus: "ArrowUp", shotMinus: "ArrowDown",
+  buzzer: "Enter", sync: "", unsync: "", prevQ: "", nextQ: "",
+  homePlus1: "w", homePlus2: "e", homePlus3: "r", homeMinus1: "Tab", homeFoul: "z",
+  awayPlus1: "a", awayPlus2: "s", awayPlus3: "d", awayMinus1: ".", awayFoul: "c",
+  undo: "x",
 };
 const HOTKEY_LABELS: Record<HotAction, string> = {
   shotToggle: "Start / Pause both clocks", reset24: "Reset 24s", reset14: "Reset 14s",
   shotPlus: "Shot clock +1s", shotMinus: "Shot clock −1s", buzzer: "Buzzer",
   sync: "Sync (run both clocks)", unsync: "Unsync (stop shot clock)", prevQ: "Previous quarter", nextQ: "Next quarter",
+  homePlus1: "Home +1", homePlus2: "Home +2", homePlus3: "Home +3", homeMinus1: "Home −1", homeFoul: "Home foul +1",
+  awayPlus1: "Away +1", awayPlus2: "Away +2", awayPlus3: "Away +3", awayMinus1: "Away −1", awayFoul: "Away foul +1",
+  undo: "Undo last",
 };
 const HOTKEY_ACTIONS = Object.keys(HOTKEY_DEFAULTS) as HotAction[];
+// Keys-dialog grouping (the flat list got long once scores/fouls joined the clock actions).
+const HOTKEY_GROUPS: [string, HotAction[]][] = [
+  ["Clock", ["shotToggle", "reset24", "reset14", "shotPlus", "shotMinus", "buzzer"]],
+  ["Home team", ["homePlus1", "homePlus2", "homePlus3", "homeMinus1", "homeFoul"]],
+  ["Away team", ["awayPlus1", "awayPlus2", "awayPlus3", "awayMinus1", "awayFoul"]],
+  ["Game", ["undo", "sync", "unsync", "prevQ", "nextQ"]],
+];
 const HOTKEYS_LS = "bdc_hotkeys";
 function loadHotkeys(): Record<HotAction, string> {
   if (typeof window === "undefined") return { ...HOTKEY_DEFAULTS };
@@ -244,9 +266,16 @@ function useScoreboardHotkeys(s: GameState | null, hotkeys: Record<HotAction, st
 
       const action = HOTKEY_ACTIONS.find((a) => keyMatches(hkRef.current[a], e.key));
       if (!action) return;
-      if (e.key === " " || e.key.startsWith("Arrow")) e.preventDefault();       // stop page scroll
+      if (e.key === " " || e.key === "Tab" || e.key.startsWith("Arrow")) e.preventDefault();   // stop page scroll / focus-move
       const locked = timerLocked(cur.court_id);
       const clockKey = (fn: () => void) => { if (locked) { toast.message("Timer is locked"); return; } fn(); };
+      // Score/foul keys reuse the exact functions the on-screen buttons call, so the play-by-play
+      // and box score stay in step. They aren't gated by the timer lock (that lock is clock-only).
+      // Each one toasts so a macropad operator gets confirmation without looking at the screen.
+      const score = (side: "home" | "away", a: "FT_MADE" | "2PT_MADE" | "3PT_MADE", pts: number) => {
+        scoreFromAction(cur, side, a);
+        toast.message(`${side === "home" ? cur.home_name : cur.away_name} +${pts}`);
+      };
       switch (action) {
         case "shotToggle": clockKey(() => ((cur.shot_clock_running || cur.game_clock_running) ? pauseBothClocks(cur) : startBothClocks(cur))); break;
         case "reset24": clockKey(() => resetShotClock(cur, 240)); break;
@@ -258,6 +287,17 @@ function useScoreboardHotkeys(s: GameState | null, hotkeys: Record<HotAction, st
         case "unsync": clockKey(() => pauseShotClock(cur)); break;
         case "prevQ": clockKey(() => advanceQuarter(cur, Math.max(1, cur.quarter - 1))); break;
         case "nextQ": clockKey(() => advanceQuarter(cur, cur.quarter + 1)); break;
+        case "homePlus1": score("home", "FT_MADE", 1); break;
+        case "homePlus2": score("home", "2PT_MADE", 2); break;
+        case "homePlus3": score("home", "3PT_MADE", 3); break;
+        case "awayPlus1": score("away", "FT_MADE", 1); break;
+        case "awayPlus2": score("away", "2PT_MADE", 2); break;
+        case "awayPlus3": score("away", "3PT_MADE", 3); break;
+        case "homeMinus1": addScore(cur, "home", -1); toast.message(`${cur.home_name} −1`); break;
+        case "awayMinus1": addScore(cur, "away", -1); toast.message(`${cur.away_name} −1`); break;
+        case "homeFoul": addFoul(cur, "home", 1); toast.message(`${cur.home_name} foul`); break;
+        case "awayFoul": addFoul(cur, "away", 1); toast.message(`${cur.away_name} foul`); break;
+        case "undo": undoLast(cur.court_id).then((l) => toast.message(l ? `Undid ${l}` : "Nothing to undo")); break;
       }
     };
     window.addEventListener("keydown", onKey);
@@ -296,17 +336,25 @@ function ScoreboardToolbar({ courtId, hotkeys, onChange }: { courtId: string; ho
       <button onClick={fullscreen} title="Toggle fullscreen" className="flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-bold hover:bg-secondary"><Maximize className="h-3.5 w-3.5" /> Full</button>
       <button onClick={() => setHelp((v) => !v)} title="Keyboard shortcuts" className="flex items-center gap-1 rounded-md border px-2.5 py-1.5 text-xs font-bold hover:bg-secondary"><Keyboard className="h-3.5 w-3.5" /> Keys</button>
       {help && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-72 rounded-xl border bg-card p-3 text-xs shadow-xl">
+        <div className="absolute right-0 top-full z-30 mt-1 max-h-[75vh] w-[26rem] overflow-y-auto rounded-xl border bg-card p-3 text-xs shadow-xl">
           <div className="mb-2 flex items-center justify-between">
             <p className="font-black uppercase tracking-wider text-muted-foreground">Shortcuts — click a key to rebind</p>
-            <button onClick={() => { setCapturing(null); onChange({ ...HOTKEY_DEFAULTS }); }} className="text-[10px] font-bold text-muted-foreground underline hover:text-foreground">Reset</button>
+            <button onClick={() => { setCapturing(null); onChange({ ...HOTKEY_DEFAULTS }); }} title="Apply the recommended macropad layout (the defaults)" className="text-[10px] font-bold text-muted-foreground underline hover:text-foreground">Macropad preset</button>
           </div>
-          {HOTKEY_ACTIONS.map((a) => (
-            <div key={a} className="flex items-center justify-between gap-3 py-0.5">
-              <span className="text-muted-foreground">{HOTKEY_LABELS[a]}</span>
-              <button onClick={() => setCapturing((c) => (c === a ? null : a))} className={`min-w-[3.25rem] rounded px-1.5 py-0.5 font-mono font-bold ${capturing === a ? "animate-pulse bg-amber-500 text-white" : "bg-secondary hover:bg-secondary/70"}`}>
-                {capturing === a ? "Press…" : (hotkeys[a] ? keyLabel(hotkeys[a]) : "—")}
-              </button>
+
+          <PadMap hotkeys={hotkeys} />
+
+          {HOTKEY_GROUPS.map(([group, actions]) => (
+            <div key={group} className="mt-2">
+              <p className="mb-0.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">{group}</p>
+              {actions.map((a) => (
+                <div key={a} className="flex items-center justify-between gap-3 py-0.5">
+                  <span className="text-muted-foreground">{HOTKEY_LABELS[a]}</span>
+                  <button onClick={() => setCapturing((c) => (c === a ? null : a))} className={`min-w-[3.25rem] rounded px-1.5 py-0.5 font-mono font-bold ${capturing === a ? "animate-pulse bg-amber-500 text-white" : "bg-secondary hover:bg-secondary/70"}`}>
+                    {capturing === a ? "Press…" : (hotkeys[a] ? keyLabel(hotkeys[a]) : "—")}
+                  </button>
+                </div>
+              ))}
             </div>
           ))}
           <p className="mt-2 border-t pt-2 text-[10px] text-muted-foreground">
@@ -314,6 +362,36 @@ function ScoreboardToolbar({ courtId, hotkeys, onChange }: { courtId: string; ho
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+/* Visual map of the scorer's-table macropad (landscape, knob on the left) showing what each
+   physical key currently does. Renders from the live bindings, so rebinds update it instantly. */
+const PAD_ROWS: { key: string; legend: string; span?: number }[][] = [
+  [{ key: "Escape", legend: "ESC" }, { key: "w", legend: "W" }, { key: "e", legend: "E" }, { key: "r", legend: "R" }, { key: "t", legend: "T" }],
+  [{ key: "Tab", legend: "TAB" }, { key: "a", legend: "A" }, { key: "s", legend: "S" }, { key: "d", legend: "D" }, { key: "Enter", legend: "ENT" }],
+  [{ key: "Shift", legend: "SHIFT" }, { key: "z", legend: "Z" }, { key: "x", legend: "X" }, { key: "c", legend: "C" }, { key: "Delete", legend: "DEL" }],
+  [{ key: "Control", legend: "CTRL" }, { key: "Alt", legend: "ALT" }, { key: " ", legend: "SPACE", span: 2 }, { key: ".", legend: "·" }],
+];
+function PadMap({ hotkeys }: { hotkeys: Record<HotAction, string> }) {
+  const actionFor = (k: string): HotAction | undefined => HOTKEY_ACTIONS.find((a) => keyMatches(hotkeys[a], k));
+  return (
+    <div className="rounded-lg border bg-background p-2">
+      <p className="mb-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">Macropad (knob on the left)</p>
+      <div className="grid grid-cols-5 gap-1">
+        {PAD_ROWS.flatMap((row, ri) =>
+          row.map((cell) => {
+            const a = actionFor(cell.key);
+            return (
+              <div key={`${ri}-${cell.legend}`} className={`rounded-md border px-1 py-1 text-center ${a ? "bg-secondary" : "opacity-40"}`} style={cell.span ? { gridColumn: `span ${cell.span}` } : undefined}>
+                <div className="font-mono text-[10px] font-black leading-none">{cell.legend}</div>
+                <div className="mt-0.5 truncate text-[9px] leading-tight text-muted-foreground">{a ? HOTKEY_LABELS[a] : "—"}</div>
+              </div>
+            );
+          }),
+        )}
+      </div>
     </div>
   );
 }
