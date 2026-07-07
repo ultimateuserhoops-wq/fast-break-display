@@ -199,11 +199,22 @@ const HOTKEY_GROUPS: [string, HotAction[]][] = [
   ["Game", ["undo", "sync", "unsync", "prevQ", "nextQ"]],
 ];
 const HOTKEYS_LS = "bdc_hotkeys";
+const HOTKEYS_VER_LS = "bdc_hotkeys_ver";
+// Bump when the DEFAULTS change in a way that makes an older saved map actively wrong. A pre-macropad
+// map (sync="s", reset24="r", …) has no score keys AND collides with the new score bindings — and the
+// old action wins by list order — so 's'/'r' etc. fired the clock instead of scoring. On a version
+// mismatch we discard the saved map and hand back clean macropad defaults; the operator can rebind after.
+const HOTKEYS_VER = "2-macropad";
 function loadHotkeys(): Record<HotAction, string> {
   if (typeof window === "undefined") return { ...HOTKEY_DEFAULTS };
-  try { return { ...HOTKEY_DEFAULTS, ...JSON.parse(localStorage.getItem(HOTKEYS_LS) || "{}") }; } catch { return { ...HOTKEY_DEFAULTS }; }
+  try {
+    if (localStorage.getItem(HOTKEYS_VER_LS) !== HOTKEYS_VER) return { ...HOTKEY_DEFAULTS };
+    return { ...HOTKEY_DEFAULTS, ...JSON.parse(localStorage.getItem(HOTKEYS_LS) || "{}") };
+  } catch { return { ...HOTKEY_DEFAULTS }; }
 }
-function saveHotkeys(map: Record<HotAction, string>) { try { localStorage.setItem(HOTKEYS_LS, JSON.stringify(map)); } catch { /* ignore */ } }
+function saveHotkeys(map: Record<HotAction, string>) {
+  try { localStorage.setItem(HOTKEYS_LS, JSON.stringify(map)); localStorage.setItem(HOTKEYS_VER_LS, HOTKEYS_VER); } catch { /* ignore */ }
+}
 const MADEMISS_LS = (courtId: string) => `bdc_mademiss_${courtId}`;
 function loadMadeMiss(courtId: string): boolean { return typeof window === "undefined" ? true : localStorage.getItem(MADEMISS_LS(courtId)) !== "0"; }
 function saveMadeMiss(courtId: string, on: boolean) { try { localStorage.setItem(MADEMISS_LS(courtId), on ? "1" : "0"); } catch { /* ignore */ } }

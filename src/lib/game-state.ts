@@ -365,8 +365,10 @@ export async function resetScore(s: GameState, side: "home" | "away") {
 // FIBA team fouls reset each quarter (handled in advanceQuarter). In 5-on-5 the count caps at
 // 5 — reaching 5 puts the OTHER team in the bonus, so counting further adds nothing on the board.
 // 3x3 keeps counting (its bonus/penalty thresholds are higher).
-export function foulCapForMode(mode: string): number {
-  return mode === "full" ? 5 : 99;
+// Team fouls stop at 5 in every mode (a foul at 5 already puts the opponent in the bonus, and
+// the scorer doesn't track team fouls past that). Kept as a function so callers stay unchanged.
+export function foulCapForMode(_mode: string): number {
+  return 5;
 }
 export async function addFoul(s: GameState, side: "home" | "away", delta: number) {
   const key = side === "home" ? "home_fouls" : "away_fouls";
