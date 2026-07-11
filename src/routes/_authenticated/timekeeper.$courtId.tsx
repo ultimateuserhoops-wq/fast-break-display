@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { TopNav } from "@/components/Nav";
 import { CourtSelector } from "@/components/CourtSelector";
-import { Maximize } from "lucide-react";
+import { Maximize, SplitSquareHorizontal } from "lucide-react";
 import { FullscreenClocks } from "@/components/FullscreenClocks";
 import {
   useGameState, useSmoothGameClock, useSmoothShotTenths, serverNow,
@@ -12,7 +12,7 @@ import {
   type GameState,
 } from "@/lib/game-state";
 import { setBreak, useBreak, type BreakState } from "@/lib/ads";
-import { loadHotkeys, useScoreboardHotkeys } from "@/lib/hotkeys";
+import { loadHotkeys, useScoreboardHotkeys, loadSplitClock, saveSplitClock } from "@/lib/hotkeys";
 
 export const Route = createFileRoute("/_authenticated/timekeeper/$courtId")({
   head: () => ({ meta: [{ title: "Time Keeper — BDC" }] }),
@@ -30,6 +30,10 @@ function TimeKeeper() {
   // device — so a scorer's-table keypad drives the clock (and split-clock mode) here too.
   const [hotkeys] = useState(loadHotkeys);
   useScoreboardHotkeys(s, hotkeys);
+  // Split-clock toggle: when on, Space runs the GAME clock and A runs the SHOT clock (two operators).
+  const [split, setSplit] = useState(() => loadSplitClock(courtId));
+  const toggleSplit = () => setSplit((v) => { const n = !v; saveSplitClock(courtId, n); return n; });
+  useEffect(() => { setSplit(loadSplitClock(courtId)); }, [courtId]); // reflect the new court's setting after a court switch
 
   // Full-screen, chrome-free clock view (game on top, big shot below) for the scorer's table.
   const fsRef = useRef<HTMLDivElement>(null);
@@ -61,6 +65,13 @@ function TimeKeeper() {
           </div>
           <div className="flex items-center gap-2">
             <button
+              onClick={toggleSplit}
+              className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold transition ${split ? "border-emerald-500 bg-emerald-500/15 text-emerald-600" : "hover:bg-secondary"}`}
+              title={split ? "Split clocks ON — the SPACE key runs the game clock and A runs the shot clock. Click to control both together again." : "Split the clocks for two operators — the SPACE key runs the game clock, A runs the shot clock."}
+            >
+              <SplitSquareHorizontal className="h-3.5 w-3.5" /> {split ? "Split: Space = game · A = shot" : "Split clocks"}
+            </button>
+            <button
               onClick={() => setPresenting(true)}
               className="flex items-center gap-1.5 rounded-lg border px-3 py-1.5 text-xs font-bold hover:bg-secondary"
               title="Show the clock full-screen (no browser toolbars) — press Esc to exit"
@@ -70,6 +81,12 @@ function TimeKeeper() {
             <CourtSelector activeId={courtId} />
           </div>
         </div>
+
+        {split && (
+          <p className="mt-3 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-xs font-semibold text-emerald-700">
+            Split clocks on · keyboard: <kbd className="rounded bg-emerald-500/20 px-1 font-mono">Space</kbd> = game clock · <kbd className="rounded bg-emerald-500/20 px-1 font-mono">A</kbd> = shot clock. The buttons below still run both together.
+          </p>
+        )}
 
         <div className="mt-6 grid gap-6 md:grid-cols-2">
           <div className="rounded-3xl border bg-card p-8 text-center">
