@@ -174,14 +174,19 @@ function ScoreBlock({ s, side }: { s: GameState; side: "home" | "away" }) {
   const color = isHome ? s.home_color : s.away_color;
   const score = isHome ? s.home_score : s.away_score;
   const logo = (isHome ? s.home_logo : s.away_logo) ?? null;
+  // This team shoots the bonus once the OPPONENT reaches the 5-foul team limit.
+  const inBonus = (isHome ? s.away_fouls : s.home_fouls) >= 5;
   const [editing, setEditing] = useState(false);
   return (
     <div className="relative flex flex-col items-center gap-2">
-      <button onClick={() => setEditing((v) => !v)} className="flex max-w-[15rem] items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-white/10" title="Edit team name / logo">
-        <TeamBadge name={displayName} color={color} logo={logo} />
-        <span className="truncate text-3xl font-black uppercase tracking-wide" style={{ color }}>{displayName}</span>
-        <Pencil className="h-3.5 w-3.5 shrink-0 text-white/35" />
-      </button>
+      <div className="flex items-center gap-2">
+        <button onClick={() => setEditing((v) => !v)} className="flex max-w-[13rem] items-center gap-2 rounded-lg px-1 py-0.5 hover:bg-white/10" title="Edit team name / logo">
+          <TeamBadge name={displayName} color={color} logo={logo} />
+          <span className="truncate text-3xl font-black uppercase tracking-wide" style={{ color }}>{displayName}</span>
+          <Pencil className="h-3.5 w-3.5 shrink-0 text-white/35" />
+        </button>
+        {inBonus && <span className="shrink-0 rounded bg-amber-400 px-2 py-0.5 text-xs font-black uppercase text-black" title="Opponent has 5 team fouls — this team is in the bonus">Bonus</span>}
+      </div>
       {editing && <TeamEditPanel s={s} side={side} onClose={() => setEditing(false)} />}
       <div className="grid w-[15rem] place-items-center rounded-2xl border-4 border-white/80 bg-black py-2">
         <span className="clock-digits text-[6rem] font-black leading-none text-white">{score}</span>
