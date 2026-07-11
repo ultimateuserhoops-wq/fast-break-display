@@ -12,6 +12,7 @@ import {
   type GameState,
 } from "@/lib/game-state";
 import { setBreak, useBreak, type BreakState } from "@/lib/ads";
+import { loadHotkeys, useScoreboardHotkeys } from "@/lib/hotkeys";
 
 export const Route = createFileRoute("/_authenticated/timekeeper/$courtId")({
   head: () => ({ meta: [{ title: "Time Keeper — BDC" }] }),
@@ -25,6 +26,10 @@ function TimeKeeper() {
   const s = useGameState(courtId);
   const gameClock = useSmoothGameClock(s);   // live (no display delay) — matches court control exactly
   const shotTenths = useSmoothShotTenths(s);
+  // Same macropad/keyboard hotkeys as the Court Control panel, using the bindings saved on this
+  // device — so a scorer's-table keypad drives the clock (and split-clock mode) here too.
+  const [hotkeys] = useState(loadHotkeys);
+  useScoreboardHotkeys(s, hotkeys);
 
   // Full-screen, chrome-free clock view (game on top, big shot below) for the scorer's table.
   const fsRef = useRef<HTMLDivElement>(null);
