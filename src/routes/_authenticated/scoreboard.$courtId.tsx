@@ -237,6 +237,13 @@ function keyLabel(k: string): string {
 }
 const keyMatches = (cfg: string, ev: string) => !!cfg && (cfg === ev || (cfg.length === 1 && ev.length === 1 && cfg.toLowerCase() === ev.toLowerCase()));
 
+// Split-clock keys (per device). OFF (default): Space starts/pauses BOTH clocks together.
+// ON: Space runs the GAME clock only and A runs the SHOT clock only — for a two-operator setup
+// (one person on game time, one on the shot clock). While ON, A no longer scores Away +1.
+const SPLITCLOCK_LS = (courtId: string) => `bdc_splitclock_${courtId}`;
+function loadSplitClock(courtId: string): boolean { return typeof window !== "undefined" && localStorage.getItem(SPLITCLOCK_LS(courtId)) === "1"; }
+function saveSplitClock(courtId: string, on: boolean) { try { localStorage.setItem(SPLITCLOCK_LS(courtId), on ? "1" : "0"); } catch { /* ignore */ } }
+
 // Auto-advance the period when the game clock hits 0: next quarter, or a fresh overtime when
 // the score is tied at the end of Q4 / an OT, otherwise the game ends. Fires once per expiry.
 function usePeriodExpiry(s: GameState | null) {
@@ -270,14 +277,28 @@ function useScoreboardHotkeys(s: GameState | null, hotkeys: Record<HotAction, st
       const cur = sRef.current; if (!cur) return;
       const el = e.target as HTMLElement | null;
       if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable)) return;
+      // The pad must never let Space/Enter re-fire a focused on-screen button or reopen a menu.
+      const blurActive = () => { if (document.activeElement instanceof HTMLElement) document.activeElement.blur(); };
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undoLast(cur.court_id).then((l) => l && toast.message(`Undid ${l}`)); return; }
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") { e.preventDefault(); const shotL = isShotLocked(cur.court_id); resetClocksForQuarter(cur, !shotL); toast.message(shotL ? "Game clock reset (shot clock is Ref 2's)" : "Clocks reset"); return; }
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
+      // Split-clock mode takes priority over the normal key map: Space = game clock only,
+      // A = shot clock only. (A stops scoring Away +1 while this is on.)
+      if (loadSplitClock(cur.court_id)) {
+        const runClock = (running: boolean, start: () => void, pause: () => void) => {
+          if (timerLocked(cur.court_id)) { toast.message("Timer is locked"); return; }
+          running ? pause() : start();
+        };
+        if (e.key === " ") { e.preventDefault(); blurActive(); runClock(cur.game_clock_running, () => startGameClock(cur), () => pauseGameClock(cur)); toast.message("Game clock"); return; }
+        if (e.key.length === 1 && e.key.toLowerCase() === "a") { e.preventDefault(); blurActive(); runClock(cur.shot_clock_running, () => startShotClock(cur), () => pauseShotClock(cur)); toast.message("Shot clock"); return; }
+      }
+
       const action = HOTKEY_ACTIONS.find((a) => keyMatches(hkRef.current[a], e.key));
       if (!action) return;
-      if (e.key === " " || e.key === "Tab" || e.key.startsWith("Arrow")) e.preventDefault();   // stop page scroll / focus-move
+      if (e.key === " " || e.key === "Enter" || e.key === "Tab" || e.key.startsWith("Arrow")) e.preventDefault();   // stop scroll / focus-move / re-firing a focused button
+      blurActive();
       const locked = timerLocked(cur.court_id);
       const clockKey = (fn: () => void) => { if (locked) { toast.message("Timer is locked"); return; } fn(); };
       // Score/foul keys reuse the exact functions the on-screen buttons call, so the play-by-play
@@ -319,6 +340,8 @@ function useScoreboardHotkeys(s: GameState | null, hotkeys: Record<HotAction, st
 function ScoreboardToolbar({ courtId, hotkeys, onChange }: { courtId: string; hotkeys: Record<HotAction, string>; onChange: (hk: Record<HotAction, string>) => void }) {
   const [help, setHelp] = useState(false);
   const [capturing, setCapturing] = useState<HotAction | null>(null);
+  const [split, setSplit] = useState(() => loadSplitClock(courtId));
+  const toggleSplit = () => setSplit((v) => { const n = !v; saveSplitClock(courtId, n); return n; });
 
   // While rebinding, the NEXT keypress becomes that action's key. Capture phase + stopImmediate
   // so the global hotkey handler doesn't also fire the old binding.
@@ -353,7 +376,13 @@ function ScoreboardToolbar({ courtId, hotkeys, onChange }: { courtId: string; ho
             <button onClick={() => { setCapturing(null); onChange({ ...HOTKEY_DEFAULTS }); }} title="Apply the recommended macropad layout (the defaults)" className="text-[10px] font-bold text-muted-foreground underline hover:text-foreground">Macropad preset</button>
           </div>
 
-          <PadMap hotkeys={hotkeys} />
+          <PadMap hotkeys={hotkeys} split={split} />
+
+          <button onClick={toggleSplit} title="Split the clock keys for a two-operator setup" className={`mt-2 flex w-full items-center justify-between rounded-md border px-2 py-1.5 text-left transition ${split ? "border-emerald-500 bg-emerald-500/10" : "hover:bg-secondary"}`}>
+            <span className="font-semibold">Split clock keys <span className="font-normal text-muted-foreground">· Space = game · A = shot</span></span>
+            <span className={`rounded px-1.5 py-0.5 text-[10px] font-black uppercase ${split ? "bg-emerald-500 text-white" : "bg-secondary text-muted-foreground"}`}>{split ? "On" : "Off"}</span>
+          </button>
+          {split && <p className="mt-1 text-[10px] text-amber-600">While on, A runs the shot clock — Away +1 scoring is off. Use the on-screen +1 button for away free throws.</p>}
 
           {HOTKEY_GROUPS.map(([group, actions]) => (
             <div key={group} className="mt-2">
@@ -385,19 +414,24 @@ const PAD_ROWS: { key: string; legend: string; span?: number }[][] = [
   [{ key: "Shift", legend: "SHIFT" }, { key: "z", legend: "Z" }, { key: "x", legend: "X" }, { key: "c", legend: "C" }, { key: "Delete", legend: "DEL" }],
   [{ key: "Control", legend: "CTRL" }, { key: "Alt", legend: "ALT" }, { key: " ", legend: "SPACE", span: 2 }, { key: ".", legend: "·" }],
 ];
-function PadMap({ hotkeys }: { hotkeys: Record<HotAction, string> }) {
+function PadMap({ hotkeys, split }: { hotkeys: Record<HotAction, string>; split: boolean }) {
   const actionFor = (k: string): HotAction | undefined => HOTKEY_ACTIONS.find((a) => keyMatches(hotkeys[a], k));
+  // In split-clock mode Space and A are hijacked for the clocks, so relabel those two cells.
+  const override = (k: string): string | null => (split && k === " " ? "Game clock" : split && k === "a" ? "Shot clock" : null);
   return (
     <div className="rounded-lg border bg-background p-2">
-      <p className="mb-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">Macropad (knob on the left)</p>
+      <p className="mb-1.5 text-[10px] font-black uppercase tracking-wider text-muted-foreground/70">Macropad (knob on the left){split ? " · split clock" : ""}</p>
       <div className="grid grid-cols-5 gap-1">
         {PAD_ROWS.flatMap((row, ri) =>
           row.map((cell) => {
+            const ov = override(cell.key);
             const a = actionFor(cell.key);
+            const label = ov ?? (a ? HOTKEY_LABELS[a] : "—");
+            const active = !!ov || !!a;
             return (
-              <div key={`${ri}-${cell.legend}`} className={`rounded-md border px-1 py-1 text-center ${a ? "bg-secondary" : "opacity-40"}`} style={cell.span ? { gridColumn: `span ${cell.span}` } : undefined}>
+              <div key={`${ri}-${cell.legend}`} className={`rounded-md border px-1 py-1 text-center ${active ? "bg-secondary" : "opacity-40"} ${ov ? "ring-1 ring-emerald-500" : ""}`} style={cell.span ? { gridColumn: `span ${cell.span}` } : undefined}>
                 <div className="font-mono text-[10px] font-black leading-none">{cell.legend}</div>
-                <div className="mt-0.5 truncate text-[9px] leading-tight text-muted-foreground">{a ? HOTKEY_LABELS[a] : "—"}</div>
+                <div className="mt-0.5 truncate text-[9px] leading-tight text-muted-foreground">{label}</div>
               </div>
             );
           }),
