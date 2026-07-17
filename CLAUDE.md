@@ -43,7 +43,7 @@ routes render broadcast displays. One shared game state per court syncs to every
 - **Deploy cadence used all session:** `bun run build && npx wrangler deploy`, then commit + push.
 
 ## 6. Constraints
-- **Supabase:** project `jofwcwubasnatdbltanj`. <!-- TODO: confirm region is Singapore — not stated anywhere in the code. -->
+- **Supabase:** project `jofwcwubasnatdbltanj`, **Singapore (`ap-southeast-1`)** region.
 - **Webhooks/hosting:** the app deploys as a Cloudflare Worker. The Telegram bot in `gateway/` uses **long-polling**, not a Worker webhook (`gateway/telegram.ts`).
 - **AI calls:** the Worker and browser make **no** direct AI calls. AI features (Gemini for footage analysis + schedule advice; Anthropic for Telegram tips) exist **only in the local `gateway/` Bun process**, which currently calls `api.anthropic.com` and `generativelanguage.googleapis.com` **directly** with keys from its own env.
   <!-- TODO: The stated workspace rule "AI calls MUST go through the Kie.ai proxy (Anthropic/Google blocked by ISP)" is NOT reflected in this repo — no Kie.ai usage exists, and the gateway calls providers directly. Confirm whether that rule applies here (the gateway runs on a local machine, so the Workers/APAC ISP block may not bite) or whether these calls should move to Kie.ai. -->
